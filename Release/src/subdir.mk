@@ -9,6 +9,7 @@ CPP_SRCS += \
 ../src/Evaluation.cpp \
 ../src/HillClimb.cpp \
 ../src/Neighborhood.cpp \
+../src/Pyramid.cpp \
 ../src/Util.cpp \
 ../src/main.cpp 
 
@@ -18,6 +19,7 @@ OBJS += \
 ./src/Evaluation.o \
 ./src/HillClimb.o \
 ./src/Neighborhood.o \
+./src/Pyramid.o \
 ./src/Util.o \
 ./src/main.o 
 
@@ -27,6 +29,7 @@ CPP_DEPS += \
 ./src/Evaluation.d \
 ./src/HillClimb.d \
 ./src/Neighborhood.d \
+./src/Pyramid.d \
 ./src/Util.d \
 ./src/main.d 
 
