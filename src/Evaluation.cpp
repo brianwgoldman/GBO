@@ -15,8 +15,8 @@ evaluation::pointer Configuration::get(const string key) {
 DeceptiveTrap::DeceptiveTrap(Configuration& config, int run_number)
       : trap_size(config.get<int>("trap_size")),
         precision(config.get<int>("precision")) {
-  size_t length = config.get<int>("length");
-  for (size_t i=0; i < length; i+= trap_size) {
+  length_ = config.get<int>("length");
+  for (size_t i=0; i < length_; i+= trap_size) {
     epistasis_.emplace_back(trap_size, 0);
     iota(epistasis_.back().begin(), epistasis_.back().end(), i);
   }
@@ -37,71 +37,20 @@ float DeceptiveTrap::evaluate(size_t subfunction, const vector<bool> & solution)
   // Convert to percentage of total
   return partial;
 }
-/*
-// Iterate over traps, sum partial scores
-float DeceptiveStepTrap::evaluate(const vector<bool> & solution) {
-  int partial;
-  int total = 0;
 
-  int trap_maximum = (offset + trap_size) / step_size;
-  for (size_t i = 0; i < solution.size(); i += trap_size) {
-    // Find the number of bits set in each trap
-    partial = 0;
-    for (size_t index = i; index < i + trap_size; index++) {
-      partial += solution[index];
-    }
-
-    // Make it deceptive
-    if (partial < trap_size) {
-      partial = trap_size - partial - 1;
-    }
-
-    // Convert it to stepwise
-    total += (offset + partial) / step_size;
-  }
-
-  // Convert to percentage of total
-  float fitness = (float(total) * trap_size) / (solution.size() * trap_maximum);
-  return float_round(fitness, precision);
-}
-
-float Bipolar::evaluate(const vector<bool> & solution) {
-  int partial;
-  double total = 0;
-  int k = trap_size / 2;
-  for (size_t i = 0; i < solution.size(); i += trap_size) {
-    // Find the number of bits set in each trap
-    partial = 0;
-    for (size_t index = i; index < i + trap_size; index++) {
-      partial += solution[index];
-    }
-    int score = abs(partial - k);
-    if (score == k) {
-      total += 1;
-    } else if (score == 0) {
-      total += 0.9;
-    } else if (score == 1) {
-      total += 0.8;
-    }
-  }
-
-  // Convert to percentage of total
-  return float_round(total * trap_size / solution.size(), precision);
-}
-*/
 // Attempts to load the problem file, otherwise constructs a new problem
 // solves it, and saves it to a problem file
 NearestNeighborNK::NearestNeighborNK(Configuration& config, int run_number) {
   k = config.get<int>("k");
-  length = config.get<int>("length");
+  length_ = config.get<int>("length");
   precision = config.get<int>("precision");
-  table.resize(length, vector<size_t>(2 << k, 0));
+  table.resize(length_, vector<size_t>(2 << k, 0));
   int rng_seed = config.get<int>("problem_seed") + run_number;
 
-  for (int i=0; i < length; i++) {
+  for (size_t i=0; i < length_; i++) {
     epistasis_.push_back(vector<size_t>());
     for (size_t x=0; x <= k; x++) {
-      epistasis_.back().push_back((i+x)%length);
+      epistasis_.back().push_back((i+x)%length_);
     }
   }
   // Build up the filename where this problem is stored
@@ -115,18 +64,18 @@ NearestNeighborNK::NearestNeighborNK(Configuration& config, int run_number) {
   if (in) {
     // Read in information about the global minimum
     in >> minimum;
-    worst.resize(length);
+    worst.resize(length_);
     string temp;
     in >> temp;
-    for (int i = 0; i < length; i++) {
+    for (size_t i = 0; i < length_; i++) {
       worst[i] = temp[i] == '1';
     }
 
     // Read in information about the global maximum
     in >> maximum;
-    best.resize(length);
+    best.resize(length_);
     in >> temp;
-    for (int i = 0; i < length; i++) {
+    for (size_t i = 0; i < length_; i++) {
       best[i] = temp[i] == '1';
     }
 
@@ -222,7 +171,7 @@ size_t NearestNeighborNK::solve(vector<bool>& solution, bool maximize) {
       std::unordered_map<size_t, std::unordered_map<size_t, size_t> > > partial;
   size_t current;
   // Iteratively build up partial values and their fitnesses
-  for (size_t n = length / k - 1; n > 1; n--) {
+  for (size_t n = length_ / k - 1; n > 1; n--) {
     // stores the fitness of settings
     std::unordered_map<size_t, std::unordered_map<size_t, size_t> > utility;
     // stores the bit values that achieve best partial fitnesses
@@ -232,7 +181,7 @@ size_t NearestNeighborNK::solve(vector<bool>& solution, bool maximize) {
       for (size_t right = 0; right < numbers; right++) {
         utility[left][right] = 0;
         if (not maximize) {
-          utility[left][right] = (2 << k) * length;
+          utility[left][right] = (2 << k) * length_;
         }
         for (size_t middle = 0; middle < numbers; middle++) {
           current = chunk_fitness(known, n - 1, left, middle);
@@ -258,7 +207,7 @@ size_t NearestNeighborNK::solve(vector<bool>& solution, bool maximize) {
   // Initialize fitness to be worse than worst possible
   size_t fitness = 0;
   if (not maximize) {
-    fitness = (2 << k) * length;
+    fitness = (2 << k) * length_;
   }
 
   // Find the best left and right values
@@ -279,11 +228,11 @@ size_t NearestNeighborNK::solve(vector<bool>& solution, bool maximize) {
 
   // Recreate the optimal string
   solution.clear();
-  solution.reserve(length);
+  solution.reserve(length_);
   int_into_bit(best_left, solution);
   int_into_bit(best_right, solution);
   size_t last = best_right;
-  for (size_t i = 2; i < length / k; i++) {
+  for (size_t i = 2; i < length_ / k; i++) {
     last = partial[i][last][best_left];
     int_into_bit(last, solution);
   }
@@ -296,37 +245,89 @@ float NearestNeighborNK::evaluate(size_t subfunction, const vector<bool> & solut
   size_t index = 0;
   //for (size_t neighbor = subfunction; neighbor <= i + k; neighbor++) {
   for (const auto& neighbor: epistasis_[subfunction]) {
-    index = (index << 1) | solution[neighbor];
+    index = (index << 1) | (solution[neighbor]^best[neighbor]);
   }
 
   // Convert to percentage of total
   return table[subfunction][index];
 }
 
+UnrestrictedNK::UnrestrictedNK(Configuration& config, int run_number) {
+  k = config.get<int>("k");
+  length_ = config.get<int>("length");
+  precision = config.get<int>("precision");
+  table.resize(length_, vector<size_t>(2 << k, 0));
+  int rng_seed = config.get<int>("problem_seed") + run_number;
+
+  vector<size_t> options(length_);
+  iota(options.begin(), options.end(), 0);
+  Random rand(rng_seed);
+  for (size_t i=0; i < length_; i++) {
+    shuffle(options.begin(), options.end(), rand);
+    epistasis_.push_back(vector<size_t>(1, i));
+    //cout << epistasis_.back().back() << ", ";
+    for (size_t x=0; x < k; x++) {
+      epistasis_.back().push_back(options[x]);
+      //cout << epistasis_.back().back() << ", ";
+    }
+    //cout << endl;
+  }
+
+  // Generate the table
+  auto generator = std::uniform_int_distribution<size_t>(0, 2 << k);
+  maximum = 0;
+  for (auto& row : table) {
+    size_t best = 0;
+    for (auto& entry : row) {
+      entry = generator(rand);
+      if (best < entry) {
+        best = entry;
+      }
+    }
+    maximum += best;
+  }
+}
+
+
+// Use the table to evaluate the quality of the solution
+float UnrestrictedNK::evaluate(size_t subfunction, const vector<bool> & solution) {
+  // Construct the integer represented by this subset of the solution
+  size_t index = 0;
+  //for (size_t neighbor = subfunction; neighbor <= i + k; neighbor++) {
+  for (const auto& neighbor: epistasis_[subfunction]) {
+    index = (index << 1) | (solution[neighbor]);
+  }
+
+  // Convert to percentage of total
+  return table[subfunction][index];
+}
+
+
 // Generates the new problem each time its needed, based on
 // the problem see and run number
 MAXSAT::MAXSAT(Configuration& config, int run_number) {
-  size_t length = config.get<int>("length");
+  length_ = config.get<int>("length");
   precision = config.get<int>("precision");
   epistasis_.resize(
-      float_round(config.get<float>("clause_ratio") * length, precision), vector<size_t>(3));
+      float_round(config.get<float>("clause_ratio") * length_, precision), vector<size_t>(3));
   signs.resize(epistasis_.size());
-
+  weights.resize(epistasis_.size(), 1);
+  total_weights = epistasis_.size();
   int rng_seed = config.get<int>("problem_seed") + run_number;
   Random rand(rng_seed);
 
   // Create the random target solution
-  vector<bool> solution = rand_vector(rand, length);
+  vector<bool> solution = rand_vector(rand, length_);
 
   // Data structure used to select random variables to include in a clause
-  vector<int> options(length);
+  vector<int> options(length_);
   std::iota(options.begin(), options.end(), 0);
 
   // Distributions for selecting 3 variables at random
   std::uniform_int_distribution<> dist[] = {
-      std::uniform_int_distribution<>(0, length - 1),
-      std::uniform_int_distribution<>(1, length - 1),
-      std::uniform_int_distribution<>(2, length - 1)
+      std::uniform_int_distribution<>(0, length_ - 1),
+      std::uniform_int_distribution<>(1, length_ - 1),
+      std::uniform_int_distribution<>(2, length_ - 1)
   };
 
   auto sign_select = std::uniform_int_distribution<>(0, sign_options.size() - 1);
@@ -352,63 +353,83 @@ float MAXSAT::evaluate(size_t subfunction, const vector<bool> & solution) {
   for (size_t c = 0; c < 3; c++) {
     // if the literal is true, move to the next clause
     if (solution[epistasis_[subfunction][c]] == signs[subfunction][c]) {
+      return weights[subfunction];
+    }
+  }
+  return 0;
+}
+
+void MAXSAT::reweight(vector<bool>& solution) {
+  //vector<size_t> failed;
+  for (size_t sub=0; sub < epistasis_.size(); sub++) {
+    if (evaluate(sub, solution) == 0) {
+      weights[sub]++;
+      total_weights++;
+      //failed.push_back(sub);
+    }
+  }
+  /*
+  size_t delta = (epistasis_.size() - failed.size()) / failed.size();
+  for (const auto& sub: failed) {
+    weights[sub] += delta;
+    total_weights += delta;
+  }
+  */
+}
+
+MAXSAT_File::MAXSAT_File(Configuration& config, int run_number) {
+
+  ifstream in(config.get<string>("sat_file"));
+  string line;
+  while (getline(in, line)) {
+    if (line.size() == 0 or line[0] == 'c') {
+      // skip blank lines and comments
+      continue;
+    }
+    // found the start of data
+    if (line[0] == 'p') {
+      break;
+    }
+  }
+  // skip "p cnf "
+  istringstream iss(line.substr(6));
+  size_t clauses;
+  iss >> length_ >> clauses;
+  cout << "Length: " << length_ << " Clauses: " << clauses << endl;
+  config.set("length", length_);
+  int term;
+  while (in >> term) {
+    vector<size_t> clause(1, abs(term) - 1);
+    vector<bool> sign(1, term > 0);
+    while (in >> term and term != 0) {
+      clause.push_back(abs(term) - 1);
+      sign.push_back(term > 0);
+    }
+    epistasis_.push_back(clause);
+    signs.push_back(sign);
+  }
+  // sanity check
+  for (const auto& clause: epistasis_) {
+    for (const auto& literal: clause) {
+      if (literal >= length_) {
+        cout << "Literal too big: " << literal << " " << length_ << endl;
+        throw "SHIT";
+      }
+    }
+  }
+  if (epistasis_.size() != clauses) {
+    cout << "Length mismatch: " << epistasis_.size() << " " << clauses << endl;
+    throw "SHIT";
+  }
+}
+
+// Count how many clauses evaluate to true
+float MAXSAT_File::evaluate(size_t subfunction, const vector<bool> & solution) {
+  for (size_t c = 0; c < epistasis_[subfunction].size(); c++) {
+    // if the literal is true, move to the next clause
+    if (solution[epistasis_[subfunction][c]] == signs[subfunction][c]) {
       return 1;
     }
   }
   return 0;
 }
-/*
-// Read in the problem from a file and set up the evaluation table
-IsingSpinGlass::IsingSpinGlass(Configuration& config, int run_number)
-    : length(config.get<int>("length")),
-      precision(config.get<int>("precision")) {
-  int rng_seed = config.get<int>("problem_seed") + run_number;
-
-  // Build up the filename where this problem is stored
-  string filename = config.get<string>("problem_folder");
-  filename += +"IsingSpinGlass_";
-  filename += config.get<string>("ising_type") + "_";
-  filename += config.get<string>("length") + "_";
-  filename += to_string(rng_seed) + ".txt";
-  ifstream in(filename);
-  if (!in) {
-    throw invalid_argument(
-        "IsingSpinGlass data file does not exist: " + filename);
-  }
-  in >> min_energy;
-  string solution_string;
-  in >> solution_string;
-  int number_of_spins;
-  in >> number_of_spins;
-  spins.resize(number_of_spins);
-  for (auto& spin : spins) {
-    for (auto& part : spin) {
-      in >> part;
-    }
-  }
-  in.close();
-  span = number_of_spins - min_energy;
-
-  // Sanity check
-  vector<bool> solution(length);
-  for (int i = 0; i < length; i++) {
-    solution[i] = solution_string[i] == '1';
-  }
-  if (evaluate(solution) != 1) {
-    throw invalid_argument(
-        "IsingSpinGlass data file has inconsistent data: " + filename);
-  }
-}
-
-// Evaluate using the read in spins
-float IsingSpinGlass::evaluate(const vector<bool>& solution) {
-  int energy = 0;
-  for (const auto& spin : spins) {
-    energy -= (bit_to_sign[solution[spin[0]]] * spin[2]
-        * bit_to_sign[solution[spin[1]]]);
-  }
-
-  // Convert to percentage of total
-  return float_round(1 - (energy - min_energy) / span, precision);
-}
-*/

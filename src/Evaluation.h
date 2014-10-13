@@ -34,11 +34,15 @@ using std::shared_ptr;
 class GrayBox {
  protected:
   vector<vector<size_t>> epistasis_;
+  size_t length_;
  public:
-  GrayBox() = default;
+  GrayBox() : length_(0) { }
   virtual ~GrayBox() = default;
   float virtual evaluate(size_t subfunction, const vector<bool> & solution) = 0;
   const vector<vector<size_t>>& epistasis() {return epistasis_;}
+  const size_t& length() { return length_; }
+  float virtual max_fitness() = 0;
+  void virtual reweight(vector<bool>& solution) { }
 };
 
 // Deceptive trap problem, where the string is composed of non-overlapping
@@ -48,47 +52,12 @@ class DeceptiveTrap : public GrayBox {
   DeceptiveTrap(Configuration& config, int run_number);
   float evaluate(size_t subfunction, const vector<bool> & solution) override;
   create_evaluator(DeceptiveTrap);
+  float max_fitness() { return length_; }
 
  private:
   size_t trap_size;
   int precision;
 };
-/*
-// Deceptive Step trap problem, similar to the Deceptive Trap problem,
-// except each trap includes configurable plataeus of "step_size" bits.
-class DeceptiveStepTrap : public GrayBox {
- public:
-  DeceptiveStepTrap(Configuration& config, int run_number)
-      : trap_size(config.get<int>("trap_size")),
-        step_size(config.get<int>("step_size")),
-        precision(config.get<int>("precision")) {
-    offset = (trap_size - step_size) % step_size;
-  }
-  float evaluate(size_t subfunction, const vector<bool> & solution) override;
-  create_evaluator(DeceptiveStepTrap);
-
- private:
-  int trap_size;
-  int step_size;
-  int offset;
-  int precision;
-
-};
-
-class Bipolar : public GrayBox {
- public:
-  Bipolar(Configuration& config, int run_number)
-      : trap_size(config.get<int>("trap_size")),
-        precision(config.get<int>("precision")) {
-  }
-  float evaluate(size_t subfunction, const vector<bool> & solution) override;
-  create_evaluator(Bipolar);
-
-private:
-  int trap_size;
-  int precision;
-};
-*/
 
 // The Nearest Neighbor NK problem randomly generates
 // a fitness landscape where the fitness of each bit
@@ -108,11 +77,10 @@ class NearestNeighborNK : public GrayBox {
   NearestNeighborNK(Configuration& config, int run_number);
   float evaluate(size_t subfunction, const vector<bool> & solution) override;
   create_evaluator(NearestNeighborNK);
-
+  float max_fitness() { return maximum; }
  private:
   vector<vector<size_t> > table;
   size_t k;
-  int length;
   int precision;
 
   // These functions are involved in determining the maximimum achievable fitness
@@ -120,6 +88,20 @@ class NearestNeighborNK : public GrayBox {
   size_t chunk_fitness(trimap& known, size_t chunk_index, size_t a, size_t b);
   void int_into_bit(size_t src, vector<bool>& dest);
   size_t solve(vector<bool>& solution, bool maximize);
+};
+
+class UnrestrictedNK : public GrayBox {
+
+ public:
+  size_t maximum;
+  UnrestrictedNK(Configuration& config, int run_number);
+  float evaluate(size_t subfunction, const vector<bool> & solution) override;
+  create_evaluator(UnrestrictedNK);
+  float max_fitness() { return maximum; }
+ private:
+  vector<vector<size_t> > table;
+  size_t k;
+  int precision;
 };
 
 // This maximum satisfiability problem generates a set of random 3 literals
@@ -131,36 +113,30 @@ class MAXSAT : public GrayBox {
   MAXSAT(Configuration& config, int run_number);
   float evaluate(size_t subfunction, const vector<bool> & solution) override;
   create_evaluator(MAXSAT);
+  float max_fitness() { return total_weights; }
+  void reweight(vector<bool>& solution) override;
  private:
   int precision;
+  vector<size_t> weights;
+  size_t total_weights;
   vector<std::array<bool, 3>> signs;
   // Data structure used to select the negative signs on literals.
   // Ensures proper distribution of negated literals.
   vector<std::array<int, 3>> sign_options = { { {0, 0, 1} }, { {0, 1, 0} },
     { { 1, 0, 0} }, { {1, 0, 0} }, { {0, 1, 1} }, { {1, 1, 1} }, };
 };
-/*
-// The Ising Spin Glass problem is defined by a 2d toroidal grid
-// of node interactions.  The goal is to set the "spin" of each node
-// to minimize interaction terms.  This problem requires external tools
-// to create and define the bounds of each problem.
-class IsingSpinGlass : public GrayBox {
- public:
-  IsingSpinGlass(Configuration& config, int run_number);
-  float evaluate(size_t subfunction, const vector<bool> & solution) override;
-  create_evaluator(IsingSpinGlass);
 
+
+class MAXSAT_File : public GrayBox {
+ public:
+  MAXSAT_File(Configuration& config, int run_number);
+  float evaluate(size_t subfunction, const vector<bool> & solution) override;
+  create_evaluator(MAXSAT_File);
+  float max_fitness() { return epistasis_.size(); }
  private:
-  int length;
-  int precision;
-  int min_energy;
-  float span;
-  // used to quickly convert a bit to a sign.
-  std::array<int, 2> bit_to_sign = { { -1, 1 } };
-  // each spin is composed of 3 numbers: index, index, sign
-  vector<std::array<int, 3>> spins;
+  vector<vector<bool>> signs;
 };
-*/
+
 // This mapping is used to convert a problem's name into an instance
 // of that Evaluator object
 namespace evaluation {
@@ -170,7 +146,9 @@ static std::unordered_map<string, pointer> lookup( {
     //{ "DeceptiveStepTrap", DeceptiveStepTrap::create },
     //{ "Bipolar", Bipolar::create },
     { "NearestNeighborNK", NearestNeighborNK::create },
+    { "UnrestrictedNK", UnrestrictedNK::create },
     { "MAXSAT", MAXSAT::create },
+    { "MAXSAT_File", MAXSAT_File::create },
     //{ "IsingSpinGlass", IsingSpinGlass::create },
 });
 }

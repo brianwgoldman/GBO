@@ -13,6 +13,7 @@
 #include "HillClimb.h"
 #include "Crossover.h"
 #include "Neighborhood.h"
+#include "Pyramid.h"
 using namespace std;
 
 bool compare_tuples(const vector<size_t>& x, const vector<size_t>& y) {
@@ -64,11 +65,53 @@ int main(int argc, char * argv[]) {
   }
   rand.seed(seed);
   auto problem = config.get<evaluation::pointer>("problem");
-  auto gray_box = problem(config, config.get<int>("problem_seed"));
   auto climb = config.get<hill_climb::pointer>("hill_climber");
-  Neighborhood neighbors(gray_box, config.get<int>("radius"));
-  cout << "Start" << endl;
-  auto start = chrono::steady_clock::now();
+  vector<float> missing;
+  size_t solved = 0;
+  vector<double> solved_time;
+  for (size_t run=0; run < config.get<size_t>("runs"); run++) {
+    auto gray_box = problem(config, config.get<int>("problem_seed")+run);
+
+    Neighborhood neighbors(gray_box, config.get<int>("radius"));
+    float best = -1;
+    cout << "Start" << endl;
+    auto start = chrono::steady_clock::now();
+    //*
+    //Pyramid solver(config);
+    P3like solver(config);
+
+    double elapsed = 0;
+    do {
+    //for (size_t i = 0; i < config.get<size_t>("runs"); i++) {
+      auto fitness = solver.grind(rand, gray_box, neighbors);
+      if (best < fitness) {
+        best = fitness;
+        cout << endl << "Best: " << best;
+      }
+      cout << ".";
+      cout.flush();
+      //cout << "Returned Fitness: " << fitness << " Best: " << best << endl;
+      auto end = chrono::steady_clock::now();
+      elapsed = chrono::duration <double, ratio<60>> (end - start).count();
+    //}
+    } while (elapsed < config.get<float>("minutes") and best < gray_box->max_fitness());
+    if (best >= gray_box->max_fitness()) {
+      solved++;
+    }
+    cout << endl << "----------------Time: " << elapsed << " total solved: " << solved << " of " << run + 1 << endl;
+    missing.push_back(gray_box->max_fitness() - best);
+    solved_time.push_back(elapsed);
+    for (auto fit: missing) {
+      cout << fit << ", ";
+    }
+    cout << endl;
+    for (auto t: solved_time) {
+      cout << t << ", ";
+    }
+    cout << endl;
+  }
+  return 0;
+  //*/
   /*
   Neighborhood neighbors(gray_box, config.get<int>("radius"));
   auto moves = neighbors.moves();
@@ -91,35 +134,27 @@ int main(int argc, char * argv[]) {
     cout << endl;
   }
   */
-  //*
+  /*
   float average = 0;
-  float best = 0;
+  size_t different=0;
+  //float best = 0;
   for (size_t i = 0; i < config.get<size_t>("runs"); i++) {
     auto solution = rand_vector(rand, config.get<int>("length"));
     auto fitness = climb(rand, solution, gray_box, neighbors);
-    float temp = 0;
-    for (size_t i =0; i < gray_box->epistasis().size(); i++) {
-      temp += gray_box->evaluate(i, solution);
-    }
-    if (temp != fitness) {
-      cout << "ERROR " << temp << " " << fitness << endl;
-    }
-    //auto p2 = rand_vector(rand, config.get<int>("length"));
-    //climb(rand, p2, gray_box);
-    //vector<bool> offspring;
-    //fitness = sfx(rand, solution, p2, offspring, gray_box);
+
     average += fitness;
     if (best < fitness) {
       best = fitness;
     }
   }
-
+  //print(answer);
+  cout << "Diff: " << static_cast<float>(different) / (gray_box->epistasis().size() * config.get<int>("runs")) << endl;
   // best /= gray_box->epistasis().size();
   // average /= gray_box->epistasis().size();
   cout << "Average fitness: " << average / config.get<int>("runs") << " Best: " << best << endl;
   //*/
-  auto end = chrono::steady_clock::now();
-  cout << chrono::duration <double> (end - start).count() << " seconds" << endl;
+  //auto end = chrono::steady_clock::now();
+  //cout << chrono::duration <double> (end - start).count() << " seconds" << endl;
   return 0;
 }
 

@@ -261,10 +261,17 @@ float hill_climb::neighbor_memory(Random & rand, vector<bool> & solution, shared
     }
     neighborhood.freeze(move);
   }
+  /*
   cout << "Neighbors: " << neighborhood.moves().size()
        << " Loops: " << loops
        << " Loop/Neighbor " << static_cast<float>(loops) / neighborhood.moves().size()
        << " Improving moves: " << improvements
        << " Fitness " << fitness << endl;
+  //*/
   return fitness;
+}
+
+float hill_climb::neighbor_save(Random & rand, vector<bool> & solution, shared_ptr<GrayBox> evaluator, Neighborhood& neighborhood) {
+  neighborhood.attach(&solution);
+  return neighborhood.optimize(rand);
 }

@@ -30,12 +30,15 @@ float first_memory(Random & rand, vector<bool> & solution, shared_ptr<GrayBox> e
 
 float neighbor_memory(Random & rand, vector<bool> & solution, shared_ptr<GrayBox> evaluator, Neighborhood& neighborhood);
 
+float neighbor_save(Random & rand, vector<bool> & solution, shared_ptr<GrayBox> evaluator, Neighborhood& neighborhood);
+
 // Mapping used to convert configuration string names to actual function pointers
 static std::unordered_map<string, pointer> lookup( {
   { "first_improvement", first_improvement },
   { "first_alternative", first_alternative },
   { "first_memory", first_memory },
   { "neighbor_memory", neighbor_memory },
+  { "neighbor_save", neighbor_save },
 });
 }
 

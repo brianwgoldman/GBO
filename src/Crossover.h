@@ -12,7 +12,14 @@
 #include "HillClimb.h"
 
 float sfx(Random& rand, vector<bool> & first, vector<bool> & second,
-         vector<bool> & result, shared_ptr<GrayBox>& evaluator);
+         vector<bool> & result, shared_ptr<GrayBox>& evaluator, Neighborhood& neighbors);
+
+float kex(Random& rand, vector<bool> & first, vector<bool> & second,
+         vector<bool> & result, shared_ptr<GrayBox>& evaluator, Neighborhood& neighbors);
+
+float rfx(Random& rand, vector<bool> & first, vector<bool> & second,
+         vector<bool> & result, shared_ptr<GrayBox>& evaluator, Neighborhood& neighbors);
+
 
 
 
