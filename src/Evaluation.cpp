@@ -13,17 +13,16 @@ evaluation::pointer Configuration::get(const string key) {
   return evaluation::lookup[get<string>(key)];
 }
 DeceptiveTrap::DeceptiveTrap(Configuration& config, int run_number)
-      : trap_size(config.get<int>("trap_size")),
-        precision(config.get<int>("precision")) {
+      : trap_size(config.get<int>("trap_size")) {
   length_ = config.get<int>("length");
   for (size_t i=0; i < length_; i+= trap_size) {
     epistasis_.emplace_back(trap_size, 0);
     iota(epistasis_.back().begin(), epistasis_.back().end(), i);
   }
-
 }
+
 // Iterate over traps, sum partial scores
-float DeceptiveTrap::evaluate(size_t subfunction, const vector<bool> & solution) {
+int DeceptiveTrap::evaluate(size_t subfunction, const vector<bool> & solution) {
   size_t partial = 0;
   for (auto index: epistasis_[subfunction]) {
     partial += solution[index];
@@ -43,10 +42,9 @@ float DeceptiveTrap::evaluate(size_t subfunction, const vector<bool> & solution)
 NearestNeighborNK::NearestNeighborNK(Configuration& config, int run_number) {
   k = config.get<int>("k");
   length_ = config.get<int>("length");
-  precision = config.get<int>("precision");
   table.resize(length_, vector<size_t>(2 << k, 0));
   int rng_seed = config.get<int>("problem_seed") + run_number;
-
+  cout << "Problem Seed: " << rng_seed << " " << config.get<int>("problem_seed") << endl;
   for (size_t i=0; i < length_; i++) {
     epistasis_.push_back(vector<size_t>());
     for (size_t x=0; x <= k; x++) {
@@ -240,7 +238,7 @@ size_t NearestNeighborNK::solve(vector<bool>& solution, bool maximize) {
 }
 
 // Use the table to evaluate the quality of the solution
-float NearestNeighborNK::evaluate(size_t subfunction, const vector<bool> & solution) {
+int NearestNeighborNK::evaluate(size_t subfunction, const vector<bool> & solution) {
   // Construct the integer represented by this subset of the solution
   size_t index = 0;
   //for (size_t neighbor = subfunction; neighbor <= i + k; neighbor++) {
@@ -255,7 +253,6 @@ float NearestNeighborNK::evaluate(size_t subfunction, const vector<bool> & solut
 UnrestrictedNK::UnrestrictedNK(Configuration& config, int run_number) {
   k = config.get<int>("k");
   length_ = config.get<int>("length");
-  precision = config.get<int>("precision");
   table.resize(length_, vector<size_t>(2 << k, 0));
   int rng_seed = config.get<int>("problem_seed") + run_number;
 
@@ -290,7 +287,7 @@ UnrestrictedNK::UnrestrictedNK(Configuration& config, int run_number) {
 
 
 // Use the table to evaluate the quality of the solution
-float UnrestrictedNK::evaluate(size_t subfunction, const vector<bool> & solution) {
+int UnrestrictedNK::evaluate(size_t subfunction, const vector<bool> & solution) {
   // Construct the integer represented by this subset of the solution
   size_t index = 0;
   //for (size_t neighbor = subfunction; neighbor <= i + k; neighbor++) {
@@ -307,9 +304,7 @@ float UnrestrictedNK::evaluate(size_t subfunction, const vector<bool> & solution
 // the problem see and run number
 MAXSAT::MAXSAT(Configuration& config, int run_number) {
   length_ = config.get<int>("length");
-  precision = config.get<int>("precision");
-  epistasis_.resize(
-      float_round(config.get<float>("clause_ratio") * length_, precision), vector<size_t>(3));
+  epistasis_.resize(config.get<float>("clause_ratio") * length_, vector<size_t>(3));
   signs.resize(epistasis_.size());
   weights.resize(epistasis_.size(), 1);
   total_weights = epistasis_.size();
@@ -349,7 +344,7 @@ MAXSAT::MAXSAT(Configuration& config, int run_number) {
 }
 
 // Count how many clauses evaluate to true
-float MAXSAT::evaluate(size_t subfunction, const vector<bool> & solution) {
+int MAXSAT::evaluate(size_t subfunction, const vector<bool> & solution) {
   for (size_t c = 0; c < 3; c++) {
     // if the literal is true, move to the next clause
     if (solution[epistasis_[subfunction][c]] == signs[subfunction][c]) {
@@ -357,24 +352,6 @@ float MAXSAT::evaluate(size_t subfunction, const vector<bool> & solution) {
     }
   }
   return 0;
-}
-
-void MAXSAT::reweight(vector<bool>& solution) {
-  //vector<size_t> failed;
-  for (size_t sub=0; sub < epistasis_.size(); sub++) {
-    if (evaluate(sub, solution) == 0) {
-      weights[sub]++;
-      total_weights++;
-      //failed.push_back(sub);
-    }
-  }
-  /*
-  size_t delta = (epistasis_.size() - failed.size()) / failed.size();
-  for (const auto& sub: failed) {
-    weights[sub] += delta;
-    total_weights += delta;
-  }
-  */
 }
 
 MAXSAT_File::MAXSAT_File(Configuration& config, int run_number) {
@@ -424,7 +401,7 @@ MAXSAT_File::MAXSAT_File(Configuration& config, int run_number) {
 }
 
 // Count how many clauses evaluate to true
-float MAXSAT_File::evaluate(size_t subfunction, const vector<bool> & solution) {
+int MAXSAT_File::evaluate(size_t subfunction, const vector<bool> & solution) {
   for (size_t c = 0; c < epistasis_[subfunction].size(); c++) {
     // if the literal is true, move to the next clause
     if (solution[epistasis_[subfunction][c]] == signs[subfunction][c]) {

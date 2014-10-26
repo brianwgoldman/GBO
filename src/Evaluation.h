@@ -13,11 +13,8 @@
 #include <math.h>
 #include <fstream>
 #include <memory>
-#include <array>
 #include "Configuration.h"
 #include "Util.h"
-
-#define PI 3.14159265
 
 using std::vector;
 using std::size_t;
@@ -38,11 +35,10 @@ class GrayBox {
  public:
   GrayBox() : length_(0) { }
   virtual ~GrayBox() = default;
-  float virtual evaluate(size_t subfunction, const vector<bool> & solution) = 0;
+  int virtual evaluate(size_t subfunction, const vector<bool> & solution) = 0;
   const vector<vector<size_t>>& epistasis() {return epistasis_;}
   const size_t& length() { return length_; }
-  float virtual max_fitness() = 0;
-  void virtual reweight(vector<bool>& solution) { }
+  int virtual max_fitness() = 0;
 };
 
 // Deceptive trap problem, where the string is composed of non-overlapping
@@ -50,13 +46,12 @@ class GrayBox {
 class DeceptiveTrap : public GrayBox {
  public:
   DeceptiveTrap(Configuration& config, int run_number);
-  float evaluate(size_t subfunction, const vector<bool> & solution) override;
+  int evaluate(size_t subfunction, const vector<bool> & solution) override;
   create_evaluator(DeceptiveTrap);
-  float max_fitness() { return length_; }
+  int max_fitness() { return length_; }
 
  private:
   size_t trap_size;
-  int precision;
 };
 
 // The Nearest Neighbor NK problem randomly generates
@@ -75,13 +70,12 @@ class NearestNeighborNK : public GrayBox {
   vector<bool> best;
   vector<bool> worst;
   NearestNeighborNK(Configuration& config, int run_number);
-  float evaluate(size_t subfunction, const vector<bool> & solution) override;
+  int evaluate(size_t subfunction, const vector<bool> & solution) override;
   create_evaluator(NearestNeighborNK);
-  float max_fitness() { return maximum; }
+  int max_fitness() { return maximum; }
  private:
   vector<vector<size_t> > table;
   size_t k;
-  int precision;
 
   // These functions are involved in determining the maximimum achievable fitness
   // on the randomly generated landscape
@@ -95,13 +89,12 @@ class UnrestrictedNK : public GrayBox {
  public:
   size_t maximum;
   UnrestrictedNK(Configuration& config, int run_number);
-  float evaluate(size_t subfunction, const vector<bool> & solution) override;
+  int evaluate(size_t subfunction, const vector<bool> & solution) override;
   create_evaluator(UnrestrictedNK);
-  float max_fitness() { return maximum; }
+  int max_fitness() { return maximum; }
  private:
   vector<vector<size_t> > table;
   size_t k;
-  int precision;
 };
 
 // This maximum satisfiability problem generates a set of random 3 literals
@@ -111,12 +104,10 @@ class UnrestrictedNK : public GrayBox {
 class MAXSAT : public GrayBox {
  public:
   MAXSAT(Configuration& config, int run_number);
-  float evaluate(size_t subfunction, const vector<bool> & solution) override;
+  int evaluate(size_t subfunction, const vector<bool> & solution) override;
   create_evaluator(MAXSAT);
-  float max_fitness() { return total_weights; }
-  void reweight(vector<bool>& solution) override;
+  int max_fitness() { return total_weights; }
  private:
-  int precision;
   vector<size_t> weights;
   size_t total_weights;
   vector<std::array<bool, 3>> signs;
@@ -130,9 +121,9 @@ class MAXSAT : public GrayBox {
 class MAXSAT_File : public GrayBox {
  public:
   MAXSAT_File(Configuration& config, int run_number);
-  float evaluate(size_t subfunction, const vector<bool> & solution) override;
+  int evaluate(size_t subfunction, const vector<bool> & solution) override;
   create_evaluator(MAXSAT_File);
-  float max_fitness() { return epistasis_.size(); }
+  int max_fitness() { return epistasis_.size(); }
  private:
   vector<vector<bool>> signs;
 };
@@ -143,13 +134,10 @@ namespace evaluation {
 using pointer=shared_ptr<GrayBox> (*)(Configuration &, int);
 static std::unordered_map<string, pointer> lookup( {
     { "DeceptiveTrap", DeceptiveTrap::create },
-    //{ "DeceptiveStepTrap", DeceptiveStepTrap::create },
-    //{ "Bipolar", Bipolar::create },
     { "NearestNeighborNK", NearestNeighborNK::create },
     { "UnrestrictedNK", UnrestrictedNK::create },
     { "MAXSAT", MAXSAT::create },
     { "MAXSAT_File", MAXSAT_File::create },
-    //{ "IsingSpinGlass", IsingSpinGlass::create },
 });
 }
 
