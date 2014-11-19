@@ -10,6 +10,7 @@
 using namespace std;
 
 ImprovementHarness::ImprovementHarness(shared_ptr<GrayBox> evaluator_, size_t radius) {
+  recording.start_clock();
   evaluator = evaluator_;
   // Construct neighborhood
   unordered_map<size_t, unordered_set<size_t>> graph = build_graph(evaluator);
@@ -62,6 +63,7 @@ int ImprovementHarness::attach(vector<bool>* solution_) {
     }
   }
   options.all_on();
+  recording.record(fitness);
   return fitness;
 }
 
@@ -69,7 +71,7 @@ int ImprovementHarness::optimize(Random & rand) {
   while (options.size()) {
     auto move = options.random(rand);
     if (0 < delta[move]) {
-      fitness = make_move(move); // Put in move
+      make_move(move); // Put in move
     }
     options.turn_off(move);
   }
@@ -93,6 +95,7 @@ void ImprovementHarness::set_check_point() {
 
 int ImprovementHarness::make_move(size_t move) {
   fitness += delta[move];
+  recording.record(fitness);
   for (auto sub: move_to_sub[move]) {
     auto pre_move = evaluator->evaluate(sub, *solution);
     flip(move); // Put in move

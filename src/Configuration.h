@@ -35,7 +35,7 @@ class Configuration {
   // Template call to get a value using a key.  Uses template
   // specialization to automatically cast to different types.
   template<class T>
-  T get(const string key);
+  T get(const string key) const;
 
   // Explicitly add some key value pairing to the configuraiton
   template<class T>

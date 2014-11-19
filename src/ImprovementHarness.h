@@ -10,6 +10,7 @@
 #include "Evaluation.h"
 #include "Neighborhood.h"
 #include "RandIndex.hpp"
+#include "Record.h"
 
 #include <unordered_map>
 using std::unordered_map;
@@ -28,6 +29,7 @@ class ImprovementHarness {
   void flip(size_t index);
   int make_move(size_t index);
 
+  Record recording;
   // unverified
 
   int fitness, check_point_fitness;
@@ -48,8 +50,13 @@ class ImprovementHarness {
   size_t modified() { return flipped.size(); }
   int revert();
 
+  void dump_record(const Configuration& config, size_t run) {
+    recording.dump(config, run);
+  }
+
   // Controversial
   const vector<vector<size_t>>& epistasis() { return evaluator->epistasis(); }
+  const shared_ptr<GrayBox>& evaler() { return evaluator; }
   int max_fitness() { return evaluator->max_fitness(); }
 };
 

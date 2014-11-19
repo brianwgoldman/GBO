@@ -60,7 +60,7 @@ void Configuration::dump(ostream& out) {
 // Template specialized for strings, protects
 // against accessing invalid keys
 template<>
-string Configuration::get(const string key) {
+string Configuration::get(const string key) const {
   auto it = data.find(key);
   if (it == data.end()) {
     throw invalid_argument(
@@ -71,17 +71,17 @@ string Configuration::get(const string key) {
 
 // Template specialized on integer
 template<>
-int Configuration::get(const string key) {
+int Configuration::get(const string key) const {
   return atoi(get<string>(key).c_str());
 }
 
 template<>
-size_t Configuration::get(const string key) {
+size_t Configuration::get(const string key) const {
   return atoi(get<string>(key).c_str());
 }
 
 // Template specialized on float
 template<>
-float Configuration::get(const string key) {
+float Configuration::get(const string key) const {
   return atof(get<string>(key).c_str());
 }

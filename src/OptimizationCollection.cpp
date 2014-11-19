@@ -7,7 +7,7 @@
 // Template specialization allowing strings to be converted
 // directly to the functions which create optimizer objects.
 template<>
-optimize::pointer Configuration::get(const string key) {
+optimize::pointer Configuration::get(const string key) const {
   return optimize::lookup[get<string>(key)];
 }
 

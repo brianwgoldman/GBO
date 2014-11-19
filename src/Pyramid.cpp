@@ -18,6 +18,7 @@ Pyramid::Pyramid(Random& _rand, Configuration& _config, ImprovementHarness& _har
   tries.resize(length, 0);
 }
 
+// TODO Idea about using subfunctions to come up with random colorings of the graph
 void Pyramid::sfx_tree(vector<vector<size_t>> & blocks) {
   for (size_t i=0; i < length; i++) {
     // creates vectors of size 1 with value i

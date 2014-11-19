@@ -56,6 +56,7 @@ int main(int argc, char * argv[]) {
     if (best >= gray_box->max_fitness()) {
       solved++;
     }
+    neighbors.dump_record(config, run);
     cout << endl << "----------------Time: " << elapsed << " total solved: " << solved << " of " << run + 1 << endl;
     missing.push_back(gray_box->max_fitness() - best);
     solved_time.push_back(elapsed);

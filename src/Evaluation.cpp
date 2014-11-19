@@ -9,7 +9,7 @@ using namespace std;
 // Template specialization to convert a string to a function pointer
 // Used to allow configurable problem choice
 template<>
-evaluation::pointer Configuration::get(const string key) {
+evaluation::pointer Configuration::get(const string key) const {
   return evaluation::lookup[get<string>(key)];
 }
 DeceptiveTrap::DeceptiveTrap(Configuration& config, int run_number)

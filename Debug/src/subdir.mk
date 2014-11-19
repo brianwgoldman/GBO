@@ -12,6 +12,7 @@ CPP_SRCS += \
 ../src/OptimizationCollection.cpp \
 ../src/Pyramid.cpp \
 ../src/RandomRestartHC.cpp \
+../src/Record.cpp \
 ../src/SAC.cpp \
 ../src/Util.cpp \
 ../src/main.cpp 
@@ -25,6 +26,7 @@ OBJS += \
 ./src/OptimizationCollection.o \
 ./src/Pyramid.o \
 ./src/RandomRestartHC.o \
+./src/Record.o \
 ./src/SAC.o \
 ./src/Util.o \
 ./src/main.o 
@@ -38,6 +40,7 @@ CPP_DEPS += \
 ./src/OptimizationCollection.d \
 ./src/Pyramid.d \
 ./src/RandomRestartHC.d \
+./src/Record.d \
 ./src/SAC.d \
 ./src/Util.d \
 ./src/main.d 
