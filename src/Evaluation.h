@@ -128,6 +128,16 @@ class MAXSAT_File : public GrayBox {
   vector<vector<bool>> signs;
 };
 
+class MAXCUT_File : public GrayBox {
+ public:
+  MAXCUT_File(Configuration& config, int run_number);
+  int evaluate(size_t subfunction, const vector<bool> & solution) override;
+  create_evaluator(MAXCUT_File);
+  int max_fitness() { return maximum; }
+ private:
+  vector<int> weights;
+  int maximum;
+};
 // This mapping is used to convert a problem's name into an instance
 // of that Evaluator object
 namespace evaluation {
@@ -138,6 +148,7 @@ static std::unordered_map<string, pointer> lookup( {
     { "UnrestrictedNK", UnrestrictedNK::create },
     { "MAXSAT", MAXSAT::create },
     { "MAXSAT_File", MAXSAT_File::create },
+    { "MAXCUT_File", MAXCUT_File::create },
 });
 }
 

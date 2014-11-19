@@ -410,3 +410,21 @@ int MAXSAT_File::evaluate(size_t subfunction, const vector<bool> & solution) {
   }
   return 0;
 }
+
+MAXCUT_File::MAXCUT_File(Configuration& config, int run_number) {
+  ifstream in(config.get<string>("cut_file"));
+  size_t edges;
+  in >> length_ >> edges >> maximum;
+  config.set("length", length_);
+  size_t x, y;
+  int weight;
+  while (in >> x >> y >> weight) {
+    epistasis_.push_back({x-1, y-1});
+    weights.push_back(weight);
+  }
+}
+
+int MAXCUT_File::evaluate(size_t subfunction, const vector<bool> & solution) {
+  return (solution[epistasis_[subfunction][0]] !=
+          solution[epistasis_[subfunction][1]])? weights[subfunction]: 0;
+}
