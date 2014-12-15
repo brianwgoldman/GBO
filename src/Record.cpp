@@ -25,7 +25,8 @@ void Record::dump(ostream& out) const {
 void Record::dump(const Configuration& config, size_t run) const {
   string out_filename = config.get<string>("dat_file");
   if (out_filename != "none") {
-    std::ofstream out(out_filename + "_" + std::to_string(run) + ".dat");
+    //std::ofstream out(out_filename + "_" + std::to_string(run) + ".dat");
+    std::ofstream out(out_filename);
     dump(out);
   }
 }
