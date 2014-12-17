@@ -32,6 +32,8 @@ class Configuration {
   // input files
   void dump(std::ostream& out);
 
+  void dump();
+
   // Template call to get a value using a key.  Uses template
   // specialization to automatically cast to different types.
   template<class T>

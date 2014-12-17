@@ -44,19 +44,6 @@ void Configuration::parse(char filename[]) {
   }
 }
 
-// Prints the key value pairs in sorted order,
-// one pair per line
-void Configuration::dump(ostream& out) {
-  vector<pair<string, string> > sortable;
-  for (const auto& it : data) {
-    sortable.push_back(it);
-  }
-  sort(sortable.begin(), sortable.end());
-  for (const auto& it : sortable) {
-    out << it.first << " " << it.second << endl;
-  }
-}
-
 // Template specialized for strings, protects
 // against accessing invalid keys
 template<>
@@ -84,4 +71,25 @@ size_t Configuration::get(const string key) const {
 template<>
 float Configuration::get(const string key) const {
   return atof(get<string>(key).c_str());
+}
+
+void Configuration::dump() {
+  string out_filename = get<string>("cfg_file");
+  if (out_filename != "none") {
+    std::ofstream out(out_filename);
+    dump(out);
+  }
+}
+
+// Prints the key value pairs in sorted order,
+// one pair per line
+void Configuration::dump(ostream& out) {
+  vector<pair<string, string> > sortable;
+  for (const auto& it : data) {
+    sortable.push_back(it);
+  }
+  sort(sortable.begin(), sortable.end());
+  for (const auto& it : sortable) {
+    out << it.first << " " << it.second << endl;
+  }
 }

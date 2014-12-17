@@ -20,44 +20,35 @@ using std::unordered_set;
 class ImprovementHarness {
   vector<vector<size_t>> moves_;
   vector<unordered_set<size_t>> move_to_sub, sub_to_move;
-  unordered_map<size_t, size_t> single_bit_moves;
+  vector<size_t> single_bit_moves;
   vector<int> delta;
   shared_ptr<GrayBox> evaluator;
   vector<bool> * solution;
 
   RandIndex<Random> options;
-  void flip(size_t index);
-  int make_move(size_t index);
+  void flip_move(size_t move_index);
+  int make_move(size_t move_index);
 
-  Record recording;
-  // unverified
+  Record& recording;
 
   int fitness, check_point_fitness;
-  unordered_map<size_t, int> saved;
+  unordered_map<size_t, int> saved_delta;
   unordered_set<size_t> flipped;
 
  public:
-  ImprovementHarness(shared_ptr<GrayBox> evaluator_, size_t radius);
+  ImprovementHarness(shared_ptr<GrayBox> evaluator_, size_t radius, Record& _recording);
   virtual ~ImprovementHarness() = default;
-  const vector<vector<size_t>>& moves() { return moves_; }
-  const vector<size_t>& move(size_t index) { return moves_[index]; }
   int attach(vector<bool>* solution_);
   int optimize(Random & rand);
-  int evaluate(const vector<bool>& solution_);
+  int evaluate(const vector<bool>& solution_) { return evaluator->evaluate(solution_); }
 
   void set_check_point();
-  int modify(size_t bit);
+  int modify_bit(size_t bit);
   size_t modified() { return flipped.size(); }
   int revert();
 
-  void dump_record(const Configuration& config, size_t run) {
-    recording.dump(config, run);
-  }
-
-  // Controversial
-  const vector<vector<size_t>>& epistasis() { return evaluator->epistasis(); }
-  const shared_ptr<GrayBox>& evaler() { return evaluator; }
-  int max_fitness() { return evaluator->max_fitness(); }
+  const vector<vector<size_t>>& epistasis() const { return evaluator->epistasis(); }
+  int max_fitness() const { return evaluator->max_fitness(); }
 };
 
 #endif /* IMPROVEMENTHARNESS_H_ */

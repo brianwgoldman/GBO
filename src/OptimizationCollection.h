@@ -7,9 +7,9 @@
 #define OPTIMIZATIONCOLLECTION_H_
 
 #include "Optimizer.h"
-#include "SAC.h"
+#include "TUX.h"
 #include "Pyramid.h"
-#include "RandomRestartHC.h"
+#include "HammingBallHC.h"
 #include "BlackBoxHC.h"
 
 #include <unordered_map>
@@ -21,9 +21,9 @@ using pointer=shared_ptr<Optimizer> (*)(Random& rand, Configuration& config, Imp
 // Lookup table translates strings to function pointers
 static std::unordered_map<string, pointer> lookup( {
   { "Pyramid", Pyramid::create },
-  { "RandomRestartHC", RandomRestartHC::create },
+  { "HammingBallHC", HammingBallHC::create },
   { "BlackBoxHC", BlackBoxHC::create },
-  { "SAC", SAC::create },
+  { "TUX", TUX::create },
 });
 }
 

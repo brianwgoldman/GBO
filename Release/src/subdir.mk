@@ -7,13 +7,13 @@ CPP_SRCS += \
 ../src/BlackBoxHC.cpp \
 ../src/Configuration.cpp \
 ../src/Evaluation.cpp \
+../src/HammingBallHC.cpp \
 ../src/ImprovementHarness.cpp \
 ../src/Neighborhood.cpp \
 ../src/OptimizationCollection.cpp \
 ../src/Pyramid.cpp \
-../src/RandomRestartHC.cpp \
 ../src/Record.cpp \
-../src/SAC.cpp \
+../src/TUX.cpp \
 ../src/Util.cpp \
 ../src/main.cpp 
 
@@ -21,13 +21,13 @@ OBJS += \
 ./src/BlackBoxHC.o \
 ./src/Configuration.o \
 ./src/Evaluation.o \
+./src/HammingBallHC.o \
 ./src/ImprovementHarness.o \
 ./src/Neighborhood.o \
 ./src/OptimizationCollection.o \
 ./src/Pyramid.o \
-./src/RandomRestartHC.o \
 ./src/Record.o \
-./src/SAC.o \
+./src/TUX.o \
 ./src/Util.o \
 ./src/main.o 
 
@@ -35,13 +35,13 @@ CPP_DEPS += \
 ./src/BlackBoxHC.d \
 ./src/Configuration.d \
 ./src/Evaluation.d \
+./src/HammingBallHC.d \
 ./src/ImprovementHarness.d \
 ./src/Neighborhood.d \
 ./src/OptimizationCollection.d \
 ./src/Pyramid.d \
-./src/RandomRestartHC.d \
 ./src/Record.d \
-./src/SAC.d \
+./src/TUX.d \
 ./src/Util.d \
 ./src/main.d 
 

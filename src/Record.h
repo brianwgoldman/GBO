@@ -32,10 +32,14 @@ class Record {
 
   void dump(ostream& out) const;
 
-  void dump(const Configuration& config, size_t run) const;
+  void dump(const Configuration& config) const;
   // controversial
-  const vector<pair<int, double>>& progression() {
+  const vector<pair<int, double>>& progression() const {
     return time_to_level;
+  }
+
+  const int best_fitness_reached() const {
+    return time_to_level.back().first;
   }
 
 

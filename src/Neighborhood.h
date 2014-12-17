@@ -14,6 +14,7 @@ using std::unordered_map;
 #include <unordered_set>
 using std::unordered_set;
 
+// Constructs a sparse graph from the epistasis tables of the evaluator
 unordered_map<size_t, unordered_set<size_t>> build_graph(shared_ptr<GrayBox> evaluator);
 
 vector<vector<size_t>> k_order_subgraphs(const unordered_map<size_t, unordered_set<size_t>>& graph, size_t radius);

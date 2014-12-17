@@ -1,27 +1,28 @@
 /*
- * SAC.h
+ * TUX.h
  *
  *  Created on: Oct 15, 2014
  *      Author: goldman
  */
 
-#ifndef SAC_H_
-#define SAC_H_
+#ifndef TUX_H_
+#define TUX_H_
 
 #include "Optimizer.h"
 #include <random>
 
-class SAC : public Optimizer {
+class TUX : public Optimizer {
   vector<vector<bool>> solutions;
   vector<int> fitnesses;
   vector<bool> empty;
 
+  vector<bool> offspring, best_offspring;
   std::bernoulli_distribution coin;
 
  public:
-  SAC(Random& _rand, Configuration& _config, ImprovementHarness& _harness);
+  TUX(Random& _rand, Configuration& _config, ImprovementHarness& _harness);
   int iterate() override;
-  create_optimizer(SAC);
+  create_optimizer(TUX);
 };
 
-#endif /* SAC_H_ */
+#endif /* TUX_H_ */

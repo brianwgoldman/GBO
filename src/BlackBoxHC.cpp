@@ -14,16 +14,14 @@ BlackBoxHC::BlackBoxHC(Random& _rand, Configuration& _config, ImprovementHarness
 }
 
 int BlackBoxHC::iterate() {
-  auto solution = rand_vector(rand, length);
+  rand_vector(rand, solution);
   int fitness = harness.evaluate(solution);
   int new_fitness;
-  bool improvement;
   // keep track of locations already tried since last improvement
   std::unordered_set<int> tried;
 
   // Keep looping until there is no single bit flip improvement
   do {
-    improvement = false;
     // Test the bits in a random order
     std::shuffle(options.begin(), options.end(), rand);
     for (const auto& index : options) {
@@ -38,7 +36,6 @@ int BlackBoxHC::iterate() {
       if (fitness < new_fitness) {
         // Keep change, update variables
         fitness = new_fitness;
-        improvement = true;
         tried.clear();
       } else {
         // Revert the change
@@ -46,7 +43,7 @@ int BlackBoxHC::iterate() {
       }
       tried.insert(index);
     }
-  } while (improvement);
+  } while (tried.size() < length);
   return fitness;
 }
 

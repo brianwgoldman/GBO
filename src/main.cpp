@@ -27,53 +27,42 @@ int main(int argc, char * argv[]) {
     seed = rd();
     config.set("seed", seed);
   }
+  // save configuration if you need to do it all again
+  config.dump();
   rand.seed(seed);
+  int verbosity = config.get<int>("verbosity");
+  Record recording;
+
   auto problem = config.get<evaluation::pointer>("problem");
-  vector<int> missing;
-  size_t solved = 0;
-  vector<double> solved_time;
-  for (size_t run=0; run < config.get<size_t>("runs"); run++) {
-    auto gray_box = problem(config, run);
+  auto gray_box = problem(config);
+  auto optimizer = config.get<optimize::pointer>("optimizer");
 
-    ImprovementHarness neighbors(gray_box, config.get<int>("radius"));
-    int best = -1;
-    cout << "Start" << endl;
-    auto start = chrono::steady_clock::now();
-    auto solver = config.get<optimize::pointer>("optimizer")(rand, config, neighbors);
+  int best = numeric_limits<int>::min();
+  double elapsed = 0;
 
-    double elapsed = 0;
-    do {
-      auto fitness = solver->iterate();
-      if (best < fitness) {
-        best = fitness;
+  // Start of timing
+  auto start = chrono::steady_clock::now();
+  ImprovementHarness harness(gray_box, config.get<int>("radius"), recording);
+
+  auto solver = optimizer(rand, config, harness);
+  do {
+    auto fitness = solver->iterate();
+    if (best < fitness) {
+      best = fitness;
+      if (verbosity > 1) {
         cout << endl << "Best: " << best;
       }
+    }
+    if (verbosity > 1) {
       cout << ".";
       cout.flush();
-      auto end = chrono::steady_clock::now();
-      elapsed = chrono::duration <double, ratio<60>> (end - start).count();
-    } while (elapsed < config.get<float>("minutes") and best < gray_box->max_fitness());
-    if (best >= gray_box->max_fitness()) {
-      solved++;
     }
-    neighbors.dump_record(config, run);
-    cout << endl << "----------------Time: " << elapsed << " total solved: " << solved << " of " << run + 1 << endl;
-    missing.push_back(gray_box->max_fitness() - best);
-    solved_time.push_back(elapsed);
-    for (auto fit: missing) {
-      cout << fit << ", ";
-    }
-    cout << endl;
-    for (auto t: solved_time) {
-      cout << t << ", ";
-    }
-    cout << endl;
-  }
-  double total_time = 0;
-  for (auto t: solved_time) {
-    total_time += t;
-  }
-  cout << "Time: " << total_time << endl;
+    auto end = chrono::steady_clock::now();
+    elapsed = chrono::duration <double, ratio<60>> (end - start).count();
+  } while (elapsed < config.get<float>("minutes") and best < gray_box->max_fitness());
+  recording.dump(config);
+
+  cout << endl << "----------------Time: " << elapsed << " Best: " << best << endl;
   return 0;
 }
 

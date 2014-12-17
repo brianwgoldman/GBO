@@ -9,9 +9,9 @@
 
 void Record::record(int fitness) {
   if (time_to_level.size() == 0 or time_to_level.back().first < fitness) {
-      auto current = std::chrono::steady_clock::now();
-      auto elapsed = std::chrono::duration <double> (current - start).count();
-      time_to_level.emplace_back(fitness, elapsed);
+    auto current = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration <double> (current - start).count();
+    time_to_level.emplace_back(fitness, elapsed);
   }
 }
 
@@ -22,10 +22,9 @@ void Record::dump(ostream& out) const {
   }
 }
 
-void Record::dump(const Configuration& config, size_t run) const {
+void Record::dump(const Configuration& config) const {
   string out_filename = config.get<string>("dat_file");
   if (out_filename != "none") {
-    //std::ofstream out(out_filename + "_" + std::to_string(run) + ".dat");
     std::ofstream out(out_filename);
     dump(out);
   }

@@ -12,7 +12,16 @@ template<>
 evaluation::pointer Configuration::get(const string key) const {
   return evaluation::lookup[get<string>(key)];
 }
-DeceptiveTrap::DeceptiveTrap(Configuration& config, int run_number)
+
+int GrayBox::evaluate(const vector<bool> & solution) {
+  int total=0;
+  for(size_t sub=0; sub < epistasis().size(); sub++) {
+    total += evaluate(sub, solution);
+  }
+  return total;
+}
+
+DeceptiveTrap::DeceptiveTrap(Configuration& config)
       : trap_size(config.get<int>("trap_size")) {
   length_ = config.get<int>("length");
   for (size_t i=0; i < length_; i+= trap_size) {
@@ -37,14 +46,71 @@ int DeceptiveTrap::evaluate(size_t subfunction, const vector<bool> & solution) {
   return partial;
 }
 
-// Attempts to load the problem file, otherwise constructs a new problem
-// solves it, and saves it to a problem file
-NearestNeighborNK::NearestNeighborNK(Configuration& config, int run_number) {
+UnrestrictedNKQ::UnrestrictedNKQ(Configuration& config) {
   k = config.get<int>("k");
   length_ = config.get<int>("length");
   table.resize(length_, vector<size_t>(2 << k, 0));
-  int rng_seed = config.get<int>("problem_seed") + run_number;
-  cout << "Problem Seed: " << rng_seed << " " << config.get<int>("problem_seed") << endl;
+  int rng_seed = config.get<int>("problem_seed");
+
+  vector<size_t> options(length_);
+  iota(options.begin(), options.end(), 0);
+  Random rand(rng_seed);
+  for (size_t i=0; i < length_; i++) {
+    shuffle(options.begin(), options.end(), rand);
+    epistasis_.push_back(vector<size_t>(1, i));
+    for (size_t x=0; x < k; x++) {
+      epistasis_.back().push_back(options[x]);
+    }
+  }
+
+  // Generate the table
+  auto generator = std::uniform_int_distribution<size_t>(0, 2 << k);
+  maximum = 0;
+  for (auto& row : table) {
+    size_t best = 0;
+    for (auto& entry : row) {
+      entry = generator(rand);
+      if (best < entry) {
+        best = entry;
+      }
+    }
+    // keeps track of the (possibly unreachable) upper bound
+    maximum += best;
+  }
+}
+
+// Use the table to evaluate the quality of the solution
+int UnrestrictedNKQ::evaluate(size_t subfunction, const vector<bool> & solution) {
+  // Construct the integer represented by this subset of the solution
+  size_t index = 0;
+  for (const auto& neighbor: epistasis_[subfunction]) {
+    index = (index << 1) | solution[neighbor];
+  }
+
+  // Convert to percentage of total
+  return table[subfunction][index];
+}
+
+// Use the table to evaluate the quality of the solution
+int NearestNeighborNKQ::evaluate(size_t subfunction, const vector<bool> & solution) {
+  // Construct the integer represented by this subset of the solution
+  size_t index = 0;
+  for (const auto& neighbor: epistasis_[subfunction]) {
+    index = (index << 1) | solution[neighbor];
+  }
+
+  // Convert to percentage of total
+  return table[subfunction][index];
+}
+
+// Attempts to load the problem file, otherwise constructs a new problem
+// solves it, and saves it to a problem file
+NearestNeighborNKQ::NearestNeighborNKQ(Configuration& config) {
+  k = config.get<int>("k");
+  length_ = config.get<int>("length");
+  table.resize(length_, vector<size_t>(2 << k, 0));
+  int rng_seed = config.get<int>("problem_seed");
+
   for (size_t i=0; i < length_; i++) {
     epistasis_.push_back(vector<size_t>());
     for (size_t x=0; x <= k; x++) {
@@ -53,7 +119,7 @@ NearestNeighborNK::NearestNeighborNK(Configuration& config, int run_number) {
   }
   // Build up the filename where this problem is stored
   string filename = config.get<string>("problem_folder");
-  filename += +"NearestNeighborNK_";
+  filename += +"NearestNeighborNKQ_";
   filename += config.get<string>("length") + "_";
   filename += config.get<string>("k") + "_";
   filename += to_string(rng_seed) + ".txt";
@@ -62,20 +128,11 @@ NearestNeighborNK::NearestNeighborNK(Configuration& config, int run_number) {
   if (in) {
     // Read in information about the global minimum
     in >> minimum;
-    worst.resize(length_);
-    string temp;
-    in >> temp;
-    for (size_t i = 0; i < length_; i++) {
-      worst[i] = temp[i] == '1';
-    }
+    read(worst, in);
 
     // Read in information about the global maximum
     in >> maximum;
-    best.resize(length_);
-    in >> temp;
-    for (size_t i = 0; i < length_; i++) {
-      best[i] = temp[i] == '1';
-    }
+    read(best, in);
 
     // Read in the fitness table
     for (auto& row : table) {
@@ -120,7 +177,7 @@ NearestNeighborNK::NearestNeighborNK(Configuration& config, int run_number) {
 
 // Used in finding the minimum / maximum of the generated problem.
 //
-size_t NearestNeighborNK::chunk_fitness(trimap& known, size_t chunk_index,
+size_t NearestNeighborNKQ::chunk_fitness(trimap& known, size_t chunk_index,
                                        size_t a, size_t b) {
   // If we know the fitness, return it
   const auto& first = known.find(chunk_index);
@@ -152,7 +209,7 @@ size_t NearestNeighborNK::chunk_fitness(trimap& known, size_t chunk_index,
 }
 
 // Converts a number into a series of bits
-void NearestNeighborNK::int_into_bit(size_t src, vector<bool>& dest) {
+void NearestNeighborNKQ::int_into_bit(size_t src, vector<bool>& dest) {
   for (size_t i = 1; i <= k; i++) {
     dest.push_back((src >> (k - i)) & 1);
   }
@@ -162,7 +219,7 @@ void NearestNeighborNK::int_into_bit(size_t src, vector<bool>& dest) {
 // See the following paper for full explanation:
 // "The computational complexity of N-K fitness functions"
 // by A. H. Wright, R. K. Thompson, and J. Zhang
-size_t NearestNeighborNK::solve(vector<bool>& solution, bool maximize) {
+size_t NearestNeighborNKQ::solve(vector<bool>& solution, bool maximize) {
   size_t numbers = 1 << k;
   trimap known;
   std::unordered_map<size_t,
@@ -237,82 +294,19 @@ size_t NearestNeighborNK::solve(vector<bool>& solution, bool maximize) {
   return fitness;
 }
 
-// Use the table to evaluate the quality of the solution
-int NearestNeighborNK::evaluate(size_t subfunction, const vector<bool> & solution) {
-  // Construct the integer represented by this subset of the solution
-  size_t index = 0;
-  //for (size_t neighbor = subfunction; neighbor <= i + k; neighbor++) {
-  for (const auto& neighbor: epistasis_[subfunction]) {
-    index = (index << 1) | (solution[neighbor]^best[neighbor]);
-  }
-
-  // Convert to percentage of total
-  return table[subfunction][index];
-}
-
-UnrestrictedNK::UnrestrictedNK(Configuration& config, int run_number) {
-  k = config.get<int>("k");
-  length_ = config.get<int>("length");
-  table.resize(length_, vector<size_t>(2 << k, 0));
-  int rng_seed = config.get<int>("problem_seed") + run_number;
-
-  vector<size_t> options(length_);
-  iota(options.begin(), options.end(), 0);
-  Random rand(rng_seed);
-  for (size_t i=0; i < length_; i++) {
-    shuffle(options.begin(), options.end(), rand);
-    epistasis_.push_back(vector<size_t>(1, i));
-    //cout << epistasis_.back().back() << ", ";
-    for (size_t x=0; x < k; x++) {
-      epistasis_.back().push_back(options[x]);
-      //cout << epistasis_.back().back() << ", ";
-    }
-    //cout << endl;
-  }
-
-  // Generate the table
-  auto generator = std::uniform_int_distribution<size_t>(0, 2 << k);
-  maximum = 0;
-  for (auto& row : table) {
-    size_t best = 0;
-    for (auto& entry : row) {
-      entry = generator(rand);
-      if (best < entry) {
-        best = entry;
-      }
-    }
-    maximum += best;
-  }
-}
-
-
-// Use the table to evaluate the quality of the solution
-int UnrestrictedNK::evaluate(size_t subfunction, const vector<bool> & solution) {
-  // Construct the integer represented by this subset of the solution
-  size_t index = 0;
-  //for (size_t neighbor = subfunction; neighbor <= i + k; neighbor++) {
-  for (const auto& neighbor: epistasis_[subfunction]) {
-    index = (index << 1) | (solution[neighbor]);
-  }
-
-  // Convert to percentage of total
-  return table[subfunction][index];
-}
-
-
 // Generates the new problem each time its needed, based on
 // the problem see and run number
-MAXSAT::MAXSAT(Configuration& config, int run_number) {
+MAXSAT::MAXSAT(Configuration& config) {
   length_ = config.get<int>("length");
   epistasis_.resize(config.get<float>("clause_ratio") * length_, vector<size_t>(3));
   signs.resize(epistasis_.size());
-  weights.resize(epistasis_.size(), 1);
-  total_weights = epistasis_.size();
-  int rng_seed = config.get<int>("problem_seed") + run_number;
+
+  int rng_seed = config.get<int>("problem_seed");
   Random rand(rng_seed);
 
   // Create the random target solution
-  vector<bool> solution = rand_vector(rand, length_);
+  vector<bool> solution(length_);
+  rand_vector(rand, solution);
 
   // Data structure used to select random variables to include in a clause
   vector<int> options(length_);
@@ -348,13 +342,13 @@ int MAXSAT::evaluate(size_t subfunction, const vector<bool> & solution) {
   for (size_t c = 0; c < 3; c++) {
     // if the literal is true, move to the next clause
     if (solution[epistasis_[subfunction][c]] == signs[subfunction][c]) {
-      return weights[subfunction];
+      return 1;
     }
   }
   return 0;
 }
 
-MAXSAT_File::MAXSAT_File(Configuration& config, int run_number) {
+MAXSAT_File::MAXSAT_File(Configuration& config) {
 
   ifstream in(config.get<string>("sat_file"));
   string line;
@@ -390,13 +384,13 @@ MAXSAT_File::MAXSAT_File(Configuration& config, int run_number) {
     for (const auto& literal: clause) {
       if (literal >= length_) {
         cout << "Literal too big: " << literal << " " << length_ << endl;
-        throw "SHIT";
+        throw exception();
       }
     }
   }
   if (epistasis_.size() != clauses) {
     cout << "Length mismatch: " << epistasis_.size() << " " << clauses << endl;
-    throw "SHIT";
+    throw exception();
   }
 }
 
@@ -411,7 +405,7 @@ int MAXSAT_File::evaluate(size_t subfunction, const vector<bool> & solution) {
   return 0;
 }
 
-MAXCUT_File::MAXCUT_File(Configuration& config, int run_number) {
+MAXCUT_File::MAXCUT_File(Configuration& config) {
   ifstream in(config.get<string>("cut_file"));
   size_t edges;
   in >> length_ >> edges >> maximum;

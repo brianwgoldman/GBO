@@ -6,13 +6,12 @@
 #include "Util.h"
 
 // Creates a new vector containing "length" number of random bits
-vector<bool> rand_vector(Random& rand, const size_t length) {
+void rand_vector(Random& rand, vector<bool>& solution) {
   std::uniform_int_distribution<int> rbit(0, 1);
-  vector<bool> vect(length, 0);
-  for (size_t index = 0; index < vect.size(); index++) {
-    vect[index] = rbit(rand);
+  auto length = solution.size();
+  for (size_t index = 0; index < length; index++) {
+    solution[index] = rbit(rand);
   }
-  return vect;
 }
 
 // Outputs the vector to the stream as 0 and 1 characters
@@ -23,11 +22,12 @@ void print(const vector<bool> & vect, std::ostream & out) {
   out << std::endl;
 }
 
-// Counts how many bits are different between "a" and "b".
-size_t hamming_distance(const vector<bool> & a, const vector<bool> & b) {
-  size_t difference = 0;
-  for (size_t i = 0; i < a.size(); i++) {
-    difference += a[i] != b[i];
+void read(vector<bool> & vect, std::istream & in) {
+  std::string temp;
+  in >> temp;
+
+  vect.resize(temp.size());
+  for (size_t i = 0; i < temp.size(); i++) {
+    vect[i] = temp[i] == '1';
   }
-  return difference;
 }
