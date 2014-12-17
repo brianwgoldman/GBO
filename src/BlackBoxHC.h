@@ -13,9 +13,9 @@
 class BlackBoxHC : public Optimizer {
   vector<int> options;
  public:
-  BlackBoxHC(Random& _rand, Configuration& _config, ImprovementHarness& _harness);
-  int iterate() override;
-  create_optimizer(BlackBoxHC);
+  BlackBoxHC(Random& _rand, Configuration& _config,
+             ImprovementHarness& _harness);
+  int iterate() override;create_optimizer(BlackBoxHC);
 };
 
 #endif /* BLACKBOXHC_H_ */

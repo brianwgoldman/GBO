@@ -14,17 +14,17 @@ evaluation::pointer Configuration::get(const string key) const {
 }
 
 int GrayBox::evaluate(const vector<bool> & solution) {
-  int total=0;
-  for(size_t sub=0; sub < epistasis().size(); sub++) {
+  int total = 0;
+  for (size_t sub = 0; sub < epistasis().size(); sub++) {
     total += evaluate(sub, solution);
   }
   return total;
 }
 
 DeceptiveTrap::DeceptiveTrap(Configuration& config)
-      : trap_size(config.get<int>("trap_size")) {
+    : trap_size(config.get<int>("trap_size")) {
   length_ = config.get<int>("length");
-  for (size_t i=0; i < length_; i+= trap_size) {
+  for (size_t i = 0; i < length_; i += trap_size) {
     epistasis_.emplace_back(trap_size, 0);
     iota(epistasis_.back().begin(), epistasis_.back().end(), i);
   }
@@ -33,7 +33,7 @@ DeceptiveTrap::DeceptiveTrap(Configuration& config)
 // Iterate over traps, sum partial scores
 int DeceptiveTrap::evaluate(size_t subfunction, const vector<bool> & solution) {
   size_t partial = 0;
-  for (auto index: epistasis_[subfunction]) {
+  for (auto index : epistasis_[subfunction]) {
     partial += solution[index];
   }
 
@@ -55,10 +55,10 @@ UnrestrictedNKQ::UnrestrictedNKQ(Configuration& config) {
   vector<size_t> options(length_);
   iota(options.begin(), options.end(), 0);
   Random rand(rng_seed);
-  for (size_t i=0; i < length_; i++) {
+  for (size_t i = 0; i < length_; i++) {
     shuffle(options.begin(), options.end(), rand);
     epistasis_.push_back(vector<size_t>(1, i));
-    for (size_t x=0; x < k; x++) {
+    for (size_t x = 0; x < k; x++) {
       epistasis_.back().push_back(options[x]);
     }
   }
@@ -80,10 +80,11 @@ UnrestrictedNKQ::UnrestrictedNKQ(Configuration& config) {
 }
 
 // Use the table to evaluate the quality of the solution
-int UnrestrictedNKQ::evaluate(size_t subfunction, const vector<bool> & solution) {
+int UnrestrictedNKQ::evaluate(size_t subfunction,
+                              const vector<bool> & solution) {
   // Construct the integer represented by this subset of the solution
   size_t index = 0;
-  for (const auto& neighbor: epistasis_[subfunction]) {
+  for (const auto& neighbor : epistasis_[subfunction]) {
     index = (index << 1) | solution[neighbor];
   }
 
@@ -92,10 +93,11 @@ int UnrestrictedNKQ::evaluate(size_t subfunction, const vector<bool> & solution)
 }
 
 // Use the table to evaluate the quality of the solution
-int NearestNeighborNKQ::evaluate(size_t subfunction, const vector<bool> & solution) {
+int NearestNeighborNKQ::evaluate(size_t subfunction,
+                                 const vector<bool> & solution) {
   // Construct the integer represented by this subset of the solution
   size_t index = 0;
-  for (const auto& neighbor: epistasis_[subfunction]) {
+  for (const auto& neighbor : epistasis_[subfunction]) {
     index = (index << 1) | solution[neighbor];
   }
 
@@ -111,10 +113,10 @@ NearestNeighborNKQ::NearestNeighborNKQ(Configuration& config) {
   table.resize(length_, vector<size_t>(2 << k, 0));
   int rng_seed = config.get<int>("problem_seed");
 
-  for (size_t i=0; i < length_; i++) {
+  for (size_t i = 0; i < length_; i++) {
     epistasis_.push_back(vector<size_t>());
-    for (size_t x=0; x <= k; x++) {
-      epistasis_.back().push_back((i+x)%length_);
+    for (size_t x = 0; x <= k; x++) {
+      epistasis_.back().push_back((i + x) % length_);
     }
   }
   // Build up the filename where this problem is stored
@@ -178,7 +180,7 @@ NearestNeighborNKQ::NearestNeighborNKQ(Configuration& config) {
 // Used in finding the minimum / maximum of the generated problem.
 //
 size_t NearestNeighborNKQ::chunk_fitness(trimap& known, size_t chunk_index,
-                                       size_t a, size_t b) {
+                                         size_t a, size_t b) {
   // If we know the fitness, return it
   const auto& first = known.find(chunk_index);
   if (first != known.end()) {
@@ -298,7 +300,8 @@ size_t NearestNeighborNKQ::solve(vector<bool>& solution, bool maximize) {
 // the problem see and run number
 MAXSAT::MAXSAT(Configuration& config) {
   length_ = config.get<int>("length");
-  epistasis_.resize(config.get<float>("clause_ratio") * length_, vector<size_t>(3));
+  epistasis_.resize(config.get<float>("clause_ratio") * length_,
+                    vector<size_t>(3));
   signs.resize(epistasis_.size());
 
   int rng_seed = config.get<int>("problem_seed");
@@ -380,8 +383,8 @@ MAXSAT_File::MAXSAT_File(Configuration& config) {
     signs.push_back(sign);
   }
   // sanity check
-  for (const auto& clause: epistasis_) {
-    for (const auto& literal: clause) {
+  for (const auto& clause : epistasis_) {
+    for (const auto& literal : clause) {
       if (literal >= length_) {
         cout << "Literal too big: " << literal << " " << length_ << endl;
         throw exception();
@@ -413,12 +416,12 @@ MAXCUT_File::MAXCUT_File(Configuration& config) {
   size_t x, y;
   int weight;
   while (in >> x >> y >> weight) {
-    epistasis_.push_back({x-1, y-1});
+    epistasis_.push_back( { x - 1, y - 1 });
     weights.push_back(weight);
   }
 }
 
 int MAXCUT_File::evaluate(size_t subfunction, const vector<bool> & solution) {
   return (solution[epistasis_[subfunction][0]] !=
-          solution[epistasis_[subfunction][1]])? weights[subfunction]: 0;
+          solution[epistasis_[subfunction][1]]) ? weights[subfunction] : 0;
 }

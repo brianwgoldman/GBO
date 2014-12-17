@@ -12,9 +12,9 @@
 
 class HammingBallHC : public Optimizer {
  public:
-  HammingBallHC(Random& _rand, Configuration& _config, ImprovementHarness& _harness);
-  int iterate() override;
-  create_optimizer(HammingBallHC);
+  HammingBallHC(Random& _rand, Configuration& _config,
+                ImprovementHarness& _harness);
+  int iterate() override;create_optimizer(HammingBallHC);
 };
 
 #endif /* HAMMINGBALLHC_H_ */

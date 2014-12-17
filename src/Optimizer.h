@@ -27,7 +27,8 @@ class Optimizer {
       : rand(_rand),
         config(_config),
         length(_config.get<size_t>("length")),
-        harness(_harness), solution(length) {
+        harness(_harness),
+        solution(length) {
   }
   virtual ~Optimizer() = default;
   // External tools interact with the optimizer by telling it to "iterate",

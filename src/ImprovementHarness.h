@@ -36,19 +36,28 @@ class ImprovementHarness {
   unordered_set<size_t> flipped;
 
  public:
-  ImprovementHarness(shared_ptr<GrayBox> evaluator_, size_t radius, Record& _recording);
+  ImprovementHarness(shared_ptr<GrayBox> evaluator_, size_t radius,
+                     Record& _recording);
   virtual ~ImprovementHarness() = default;
   int attach(vector<bool>* solution_);
   int optimize(Random & rand);
-  int evaluate(const vector<bool>& solution_) { return evaluator->evaluate(solution_); }
+  int evaluate(const vector<bool>& solution_) {
+    return evaluator->evaluate(solution_);
+  }
 
   void set_check_point();
   int modify_bit(size_t bit);
-  size_t modified() { return flipped.size(); }
+  size_t modified() {
+    return flipped.size();
+  }
   int revert();
 
-  const vector<vector<size_t>>& epistasis() const { return evaluator->epistasis(); }
-  int max_fitness() const { return evaluator->max_fitness(); }
+  const vector<vector<size_t>>& epistasis() const {
+    return evaluator->epistasis();
+  }
+  int max_fitness() const {
+    return evaluator->max_fitness();
+  }
 };
 
 #endif /* IMPROVEMENTHARNESS_H_ */

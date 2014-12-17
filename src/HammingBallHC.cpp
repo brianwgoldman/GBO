@@ -7,7 +7,8 @@
 
 #include "HammingBallHC.h"
 
-HammingBallHC::HammingBallHC(Random& _rand, Configuration& _config, ImprovementHarness& _harness)
+HammingBallHC::HammingBallHC(Random& _rand, Configuration& _config,
+                             ImprovementHarness& _harness)
     : Optimizer(_rand, _config, _harness) {
 }
 

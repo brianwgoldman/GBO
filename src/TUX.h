@@ -21,8 +21,7 @@ class TUX : public Optimizer {
 
  public:
   TUX(Random& _rand, Configuration& _config, ImprovementHarness& _harness);
-  int iterate() override;
-  create_optimizer(TUX);
+  int iterate() override;create_optimizer(TUX);
 };
 
 #endif /* TUX_H_ */

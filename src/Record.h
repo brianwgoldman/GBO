@@ -42,7 +42,6 @@ class Record {
     return time_to_level.back().first;
   }
 
-
 };
 
 #endif /* RECORD_H_ */

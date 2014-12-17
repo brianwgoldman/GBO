@@ -33,12 +33,18 @@ class GrayBox {
   vector<vector<size_t>> epistasis_;
   size_t length_;
  public:
-  GrayBox() : length_(0) { }
+  GrayBox()
+      : length_(0) {
+  }
   virtual ~GrayBox() = default;
   int virtual evaluate(size_t subfunction, const vector<bool> & solution) = 0;
   int virtual evaluate(const vector<bool> & solution);
-  const vector<vector<size_t>>& epistasis() {return epistasis_;}
-  const size_t& length() { return length_; }
+  const vector<vector<size_t>>& epistasis() {
+    return epistasis_;
+  }
+  const size_t& length() {
+    return length_;
+  }
   int virtual max_fitness() = 0;
 };
 
@@ -47,11 +53,10 @@ class GrayBox {
 class DeceptiveTrap : public GrayBox {
  public:
   DeceptiveTrap(Configuration& config);
-  int evaluate(size_t subfunction, const vector<bool> & solution) override;
-  create_graybox(DeceptiveTrap);
-  int max_fitness() { return length_; }
+  int evaluate(size_t subfunction, const vector<bool> & solution) override;create_graybox(DeceptiveTrap);
+  int max_fitness() {return length_;}
 
- private:
+private:
   size_t trap_size;
 };
 
@@ -59,10 +64,9 @@ class UnrestrictedNKQ : public GrayBox {
 
  public:
   UnrestrictedNKQ(Configuration& config);
-  int evaluate(size_t subfunction, const vector<bool> & solution) override;
-  create_graybox(UnrestrictedNKQ);
-  int max_fitness() { return maximum; }
- private:
+  int evaluate(size_t subfunction, const vector<bool> & solution) override;create_graybox(UnrestrictedNKQ);
+  int max_fitness() {return maximum;}
+private:
   vector<vector<size_t> > table;
   size_t k;
   size_t maximum;
@@ -80,10 +84,9 @@ class NearestNeighborNKQ : public GrayBox {
 
  public:
   NearestNeighborNKQ(Configuration& config);
-  int evaluate(size_t subfunction, const vector<bool> & solution) override;
-  create_graybox(NearestNeighborNKQ);
-  int max_fitness() { return maximum; }
- private:
+  int evaluate(size_t subfunction, const vector<bool> & solution) override;create_graybox(NearestNeighborNKQ);
+  int max_fitness() {return maximum;}
+private:
   vector<vector<size_t> > table;
   size_t k;
   size_t maximum;
@@ -106,37 +109,33 @@ class NearestNeighborNKQ : public GrayBox {
 class MAXSAT : public GrayBox {
  public:
   MAXSAT(Configuration& config);
-  int evaluate(size_t subfunction, const vector<bool> & solution) override;
-  create_graybox(MAXSAT);
-  int max_fitness() { return epistasis_.size(); }
- protected:
+  int evaluate(size_t subfunction, const vector<bool> & solution) override;create_graybox(MAXSAT);
+  int max_fitness() {return epistasis_.size();}
+protected:
   MAXSAT() = default;
- private:
+private:
   vector<std::array<bool, 3>> signs;
   // Data structure used to select the negative signs on literals.
   // Ensures proper distribution of negated literals.
-  const vector<std::array<int, 3>> sign_options = { { {0, 0, 1} }, { {0, 1, 0} },
-    { { 1, 0, 0} }, { {1, 0, 0} }, { {0, 1, 1} }, { {1, 1, 1} }, };
+  const vector<std::array<int, 3>> sign_options = { { {0, 0, 1}}, { {0, 1, 0}},
+    { { 1, 0, 0}}, { {1, 0, 0}}, { {0, 1, 1}}, { {1, 1, 1}},};
 };
-
 
 class MAXSAT_File : public GrayBox {
  public:
   MAXSAT_File(Configuration& config);
-  int evaluate(size_t subfunction, const vector<bool> & solution) override;
-  create_graybox(MAXSAT_File);
-  int max_fitness() { return epistasis_.size(); }
- private:
+  int evaluate(size_t subfunction, const vector<bool> & solution) override;create_graybox(MAXSAT_File);
+  int max_fitness() {return epistasis_.size();}
+private:
   vector<vector<bool>> signs;
 };
 
 class MAXCUT_File : public GrayBox {
  public:
   MAXCUT_File(Configuration& config);
-  int evaluate(size_t subfunction, const vector<bool> & solution) override;
-  create_graybox(MAXCUT_File);
-  int max_fitness() { return maximum; }
- private:
+  int evaluate(size_t subfunction, const vector<bool> & solution) override;create_graybox(MAXCUT_File);
+  int max_fitness() {return maximum;}
+private:
   vector<int> weights;
   int maximum;
 };
@@ -145,13 +144,13 @@ class MAXCUT_File : public GrayBox {
 // of that Evaluator object
 namespace evaluation {
 using pointer=shared_ptr<GrayBox> (*)(Configuration &);
-static std::unordered_map<string, pointer> lookup( {
-    { "DeceptiveTrap", DeceptiveTrap::create },
-    { "NearestNeighborNKQ", NearestNeighborNKQ::create },
-    { "UnrestrictedNKQ", UnrestrictedNKQ::create },
-    { "MAXSAT", MAXSAT::create },
-    { "MAXSAT_File", MAXSAT_File::create },
-    { "MAXCUT_File", MAXCUT_File::create },
+static std::unordered_map<string, pointer> lookup({
+  { "DeceptiveTrap", DeceptiveTrap::create },
+  { "NearestNeighborNKQ", NearestNeighborNKQ::create },
+  { "UnrestrictedNKQ", UnrestrictedNKQ::create },
+  { "MAXSAT", MAXSAT::create },
+  { "MAXSAT_File", MAXSAT_File::create },
+  { "MAXCUT_File", MAXCUT_File::create },
 });
 }
 

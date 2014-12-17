@@ -7,8 +7,9 @@
 
 #include "BlackBoxHC.h"
 
-BlackBoxHC::BlackBoxHC(Random& _rand, Configuration& _config, ImprovementHarness& _harness)
-: Optimizer(_rand, _config, _harness) {
+BlackBoxHC::BlackBoxHC(Random& _rand, Configuration& _config,
+                       ImprovementHarness& _harness)
+    : Optimizer(_rand, _config, _harness) {
   options.resize(length);
   iota(options.begin(), options.end(), 0);
 }

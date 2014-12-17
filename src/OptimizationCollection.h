@@ -19,7 +19,7 @@ namespace optimize {
 using pointer=shared_ptr<Optimizer> (*)(Random& rand, Configuration& config, ImprovementHarness& harness);
 
 // Lookup table translates strings to function pointers
-static std::unordered_map<string, pointer> lookup( {
+static std::unordered_map<string, pointer> lookup({
   { "Pyramid", Pyramid::create },
   { "HammingBallHC", HammingBallHC::create },
   { "BlackBoxHC", BlackBoxHC::create },

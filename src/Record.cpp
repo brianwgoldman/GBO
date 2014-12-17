@@ -10,14 +10,14 @@
 void Record::record(int fitness) {
   if (time_to_level.size() == 0 or time_to_level.back().first < fitness) {
     auto current = std::chrono::steady_clock::now();
-    auto elapsed = std::chrono::duration <double> (current - start).count();
+    auto elapsed = std::chrono::duration<double>(current - start).count();
     time_to_level.emplace_back(fitness, elapsed);
   }
 }
 
 void Record::dump(ostream& out) const {
   out << "Fitness\tSeconds" << std::endl;
-  for (const auto& pair: time_to_level) {
+  for (const auto& pair : time_to_level) {
     out << pair.first << "\t" << pair.second << std::endl;
   }
 }

@@ -8,7 +8,8 @@
 #include "TUX.h"
 
 TUX::TUX(Random& _rand, Configuration& _config, ImprovementHarness& _harness)
-    : Optimizer(_rand, _config, _harness), coin(0.5) {
+    : Optimizer(_rand, _config, _harness),
+      coin(0.5) {
   offspring.resize(length);
   best_offspring.resize(length);
 }
@@ -18,7 +19,7 @@ int TUX::iterate() {
   harness.attach(&solution);
   auto fitness = harness.optimize(rand);
   auto best_offspring = solution;
-  for (size_t level=0; level < solutions.size(); level++) {
+  for (size_t level = 0; level < solutions.size(); level++) {
     if (empty[level]) {
       // more efficient than assignment
       solutions[level].swap(solution);
@@ -28,10 +29,10 @@ int TUX::iterate() {
     } else {
       // TODO copy without allocation
       //auto best_offspring = solution;
-      auto best_fitness = fitness-1;
-      for (int repeat=0; repeat < (1<<level); repeat++) {
+      auto best_fitness = fitness - 1;
+      for (int repeat = 0; repeat < (1 << level); repeat++) {
         vector<bool> offspring(solution);
-        for (size_t gene=0; gene < offspring.size(); gene++) {
+        for (size_t gene = 0; gene < offspring.size(); gene++) {
           // cross with other parent
           // TODO flip coin only if parents are different
           if (coin(rand)) {
@@ -48,7 +49,7 @@ int TUX::iterate() {
         }
         // TODO Decide if this method is worth the complexity
         /*
-        if (fitness < fitnesses[level]){
+        if (fitness < fitnesses[level]) {
           if (fitness < new_fitness) {
             // more efficient than assignment
             swap(solution, offspring);

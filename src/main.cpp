@@ -58,12 +58,13 @@ int main(int argc, char * argv[]) {
       cout.flush();
     }
     auto end = chrono::steady_clock::now();
-    elapsed = chrono::duration <double, ratio<60>> (end - start).count();
-  } while (elapsed < config.get<float>("minutes") and best < gray_box->max_fitness());
+    elapsed = chrono::duration<double, ratio<60>>(end - start).count();
+  } while (elapsed < config.get<float>("minutes")
+      and best < gray_box->max_fitness());
   recording.dump(config);
 
-  cout << endl << "----------------Time: " << elapsed << " Best: " << best << endl;
+  cout << endl << "----------------Time: " << elapsed << " Best: " << best
+       << endl;
   return 0;
 }
-
 

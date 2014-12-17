@@ -21,7 +21,7 @@ class Pyramid : public Optimizer {
   unordered_set<vector<bool>> seen;
 
   void sfx_tree(vector<vector<size_t>> & blocks);
- public:
+public:
   Pyramid(Random& _rand, Configuration& _config, ImprovementHarness& _harness);
   int iterate() override;
   create_optimizer(Pyramid);
