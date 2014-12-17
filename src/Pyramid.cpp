@@ -11,7 +11,8 @@ using namespace std;
 
 Pyramid::Pyramid(Random& _rand, Configuration& _config,
                  ImprovementHarness& _harness)
-    : Optimizer(_rand, _config, _harness) {
+    : Optimizer(_rand, _config, _harness), sfx_options(harness.epistasis().size()) {
+  iota(sfx_options.begin(), sfx_options.end(), 0);
 }
 
 // TODO Idea about using subfunctions to come up with random colorings of the graph
@@ -20,14 +21,13 @@ void Pyramid::sfx_tree(vector<vector<size_t>> & blocks) {
     // creates vectors of size 1 with value i
     blocks.emplace_back(1, i);
   }
-  // TODO Add options to the Pyramid class so you don't have to recreate it
-  vector<size_t> options(harness.epistasis().size());
-  iota(options.begin(), options.end(), 0);
+
   vector<size_t> bit_to_block(length);
   iota(bit_to_block.begin(), bit_to_block.end(), 0);
-  shuffle(options.begin(), options.end(), rand);
+
+  shuffle(sfx_options.begin(), sfx_options.end(), rand);
   // for each subfunction in a random order
-  for (const auto& sub : options) {
+  for (const auto& sub : sfx_options) {
     unordered_set<size_t> block_numbers;
     // for each bit in the subfunction
     for (const auto& bit : harness.epistasis()[sub]) {
@@ -56,6 +56,19 @@ void Pyramid::sfx_tree(vector<vector<size_t>> & blocks) {
   blocks.erase(blocks.begin(), blocks.begin() + length);
 }
 
+void Pyramid::add_if_unique(const vector<bool>& candidate, size_t level) {
+  if (seen.count(candidate) == 0) {
+    if (solutions.size() == level) {
+      solutions.push_back(vector<vector<bool>>(0));
+      selector_tool.push_back(vector<size_t>(0));
+    }
+
+    selector_tool[level].push_back(selector_tool[level].size());
+    solutions[level].push_back(candidate);
+    seen.insert(candidate);
+  }
+}
+
 int Pyramid::iterate() {
   rand_vector(rand, solution);
   harness.attach(&solution);
@@ -66,18 +79,13 @@ int Pyramid::iterate() {
   for (size_t level = 0; level < solutions.size(); level++) {
     // TODO move out of loop
     if (improved) {
-      if (seen.count(solution) == 0) {
-        solutions[level].push_back(solution);
-        seen.insert(solution);
-      }
+      add_if_unique(solution, level);
       improved = false;
     }
     vector<vector<size_t>> blocks;
     sfx_tree(blocks);
 
-    // TODO Consider making this attached to the Pyramid object
-    vector<size_t> options(solutions[level].size());
-    iota(options.begin(), options.end(), 0);
+    auto& options = selector_tool[level];
 
     for (size_t index = 0; index < blocks.size(); index++) {
       size_t limit = options.size();
@@ -114,12 +122,7 @@ int Pyramid::iterate() {
     }
   }
   if (improved) {
-    if (seen.count(solution) == 0) {
-      solutions.push_back(vector<vector<bool>>(0));
-      solutions.back().push_back(solution);
-      seen.insert(solution);
-    }
+    add_if_unique(solution, solutions.size());
   }
   return fitness;
-
 }

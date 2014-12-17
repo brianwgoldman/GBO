@@ -27,14 +27,11 @@ int TUX::iterate() {
       empty[level] = false;
       return fitness;
     } else {
-      // TODO copy without allocation
-      //auto best_offspring = solution;
       auto best_fitness = fitness - 1;
       for (int repeat = 0; repeat < (1 << level); repeat++) {
         vector<bool> offspring(solution);
         for (size_t gene = 0; gene < offspring.size(); gene++) {
           // cross with other parent
-          // TODO flip coin only if parents are different
           if (coin(rand)) {
             offspring[gene] = solutions[level][gene];
           } else {
