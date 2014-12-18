@@ -31,11 +31,12 @@ int TUX::iterate() {
       for (int repeat = 0; repeat < (1 << level); repeat++) {
         vector<bool> offspring(solution);
         for (size_t gene = 0; gene < offspring.size(); gene++) {
-          // cross with other parent
-          if (coin(rand)) {
-            offspring[gene] = solutions[level][gene];
-          } else {
+          // if parents are equal, copy from parent
+          if (solutions[level][gene] == solution[gene]) {
             offspring[gene] = solution[gene];
+          } else {
+            // if unequal, offspring should be equally likely true and false.
+            offspring[gene] = rbit(rand);
           }
         }
         harness.attach(&offspring);

@@ -77,7 +77,6 @@ int Pyramid::iterate() {
   bool improved = true;
 
   for (size_t level = 0; level < solutions.size(); level++) {
-    // TODO move out of loop
     if (improved) {
       add_if_unique(solution, level);
       improved = false;

@@ -17,7 +17,7 @@ class TUX : public Optimizer {
   vector<bool> empty;
 
   vector<bool> offspring, best_offspring;
-  std::bernoulli_distribution coin;
+  std::uniform_int_distribution<int> rbit;
 
  public:
   TUX(Random& _rand, Configuration& _config, ImprovementHarness& _harness);
