@@ -12,7 +12,7 @@
 #include <random>
 
 class TUX : public Optimizer {
-  vector<vector<bool>> solutions;
+  vector<vector<bool>> tournament;
   vector<int> fitnesses;
   vector<bool> empty;
 

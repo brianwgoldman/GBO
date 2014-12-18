@@ -9,7 +9,7 @@
 
 TUX::TUX(Random& _rand, Configuration& _config, ImprovementHarness& _harness)
     : Optimizer(_rand, _config, _harness),
-      coin(0.5) {
+      rbit(0, 1) {
   offspring.resize(length);
   best_offspring.resize(length);
 }
@@ -19,10 +19,10 @@ int TUX::iterate() {
   harness.attach(&solution);
   auto fitness = harness.optimize(rand);
   auto best_offspring = solution;
-  for (size_t level = 0; level < solutions.size(); level++) {
+  for (size_t level = 0; level < tournament.size(); level++) {
     if (empty[level]) {
       // more efficient than assignment
-      solutions[level].swap(solution);
+      tournament[level].swap(solution);
       fitnesses[level] = fitness;
       empty[level] = false;
       return fitness;
@@ -32,7 +32,7 @@ int TUX::iterate() {
         vector<bool> offspring(solution);
         for (size_t gene = 0; gene < offspring.size(); gene++) {
           // if parents are equal, copy from parent
-          if (solutions[level][gene] == solution[gene]) {
+          if (tournament[level][gene] == solution[gene]) {
             offspring[gene] = solution[gene];
           } else {
             // if unequal, offspring should be equally likely true and false.
@@ -55,11 +55,11 @@ int TUX::iterate() {
           }
         } else {
           if (fitnesses[level] < new_fitness) {
-            solutions[level].swap(offspring);
+            tournament[level].swap(offspring);
             fitnesses[level] = new_fitness;
           }
         }
-        if (solutions[level] == solution) {
+        if (tournament[level] == solution) {
           break;
         }
         //*/
@@ -71,7 +71,7 @@ int TUX::iterate() {
       // stored is best
       if (fitness <= fitnesses[level]) {
         fitness = fitnesses[level];
-        solution.swap(solutions[level]);
+        solution.swap(tournament[level]);
       }
       // current is best
       empty[level] = true;
@@ -79,6 +79,6 @@ int TUX::iterate() {
   }
   empty.push_back(false);
   fitnesses.push_back(fitness);
-  solutions.push_back(solution);
+  tournament.push_back(solution);
   return fitness;
 }
