@@ -9,7 +9,7 @@ begin_time = time.time()
 
 runs = 100
 job_minutes = 239
-run_minutes = 120
+run_minutes = 180
 folder = "radius"
 jobname = sys.argv[1]
 
@@ -44,23 +44,26 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 fill = {"minutes": run_minutes}
-for problem, length in [("NearestNeighborNK", 10000)]:
+for problem, length in [("NearestNeighborNKQ", 6000), ("UnrestrictedNKQ", 6000)]:
   fill["problem"] = problem
   fill["length"] = length
-  problem_folder = path.join(folder, "%(problem)s_%(length)0.5i_%(k)0.2i"%fill)
-  try:
-    makedirs(problem_folder)
-  except OSError:
-    pass
-  for run in range(runs):
-    fill['seed'] = run + 1
-    fill['pseed'] = run
-    for k in [2, 5, 10]:
-      fill['k'] = k
-      for radius in [1, 2, 3]:
+  for fill['k'] in [1, 2, 3, 4, 5, 6]:
+    problem_folder = path.join(folder, "%(problem)s_%(length)0.5i_%(k)0.2i"%fill)
+    try:
+      makedirs(problem_folder)
+    except OSError:
+      pass
+    for run in range(runs):
+      fill['seed'] = run + 1
+      fill['pseed'] = run
+      for radius in [1, 2, 3, 4, 5, 6]:
+        if fill['k'] > 3 and radius > 5:
+          continue
+        if fill['k'] > 4 and radius > 4:
+          continue
         fill["radius"] = radius
       
-        for solver in ["Pyramid", "SAC", "RandomRestartHC"]:
+        for solver in ["Pyramid", "TUX", "HammingBallHC"]:
           fill['solver'] = solver
           fill['filename'] = path.join(problem_folder, "%(solver)s_%(radius)0.2i_%(pseed)0.5i" % (fill))
           elapsed_minutes = (time.time() - begin_time) / 60

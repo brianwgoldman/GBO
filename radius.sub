@@ -1,11 +1,10 @@
-#PBS -l nodes=1:ppn=1
-#PBS -l mem=1gb
-#PBS -l pmem=1gb
+#PBS -l nodes=1:ppn=2
+#PBS -l mem=4gb
 #PBS -l walltime=3:59:00
 #PBS -j oe
 #PBS -N radius
 #PBS -l feature=intel14
-#PBS -o /mnt/scratch/goldma72/radius3_${PBS_JOBID}.tmp
+#PBS -o /mnt/scratch/goldma72/radius_${PBS_JOBID}.tmp
 
 # Required by C++11
 module load GNU/4.8.2
@@ -14,7 +13,7 @@ cd ${PBS_O_WORKDIR}
 
 if [ ! -f radius/finished.txt ]
 then
-	qsub radius.sub
+  	qsub radius.sub
     # Runs the correct job
     timeout -s SIGINT 14360 python radius_scheduler.py ${PBS_JOBID}
     qstat -f ${PBS_JOBID}
