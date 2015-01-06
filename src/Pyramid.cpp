@@ -83,10 +83,11 @@ int Pyramid::iterate() {
     }
     vector<vector<size_t>> blocks;
     sfx_tree(blocks);
+    shuffle(blocks.begin(), blocks.end(), rand);
 
     auto& options = selector_tool[level];
-
-    for (size_t index = 0; index < blocks.size(); index++) {
+    size_t limiter = min(blocks.size(), solutions[level].size());
+    for (size_t index = 0; index < limiter; index++) {
       size_t limit = options.size();
       harness.set_check_point();
       while (limit > 0 and harness.modified() == 0) {
@@ -106,7 +107,6 @@ int Pyramid::iterate() {
       auto new_fitness = harness.optimize(rand);
 
       if (fitness <= new_fitness) {
-
         if (fitness < new_fitness) {
           improved = true;
         }
