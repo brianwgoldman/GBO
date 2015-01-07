@@ -9,7 +9,7 @@
 #define IMPROVEMENTHARNESS_H_
 #include "Evaluation.h"
 #include "Neighborhood.h"
-#include "RandIndex.hpp"
+#include "RandSet.hpp"
 #include "Record.h"
 
 #include <unordered_map>
@@ -25,7 +25,7 @@ class ImprovementHarness {
   shared_ptr<GrayBox> evaluator;
   vector<bool> * solution;
 
-  RandIndex<Random> options;
+  vector<RandSet<size_t, Random>> improvements;
   void flip_move(size_t move_index);
   int make_move(size_t move_index);
 
