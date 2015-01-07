@@ -11,7 +11,8 @@ using namespace std;
 
 ImprovementHarness::ImprovementHarness(shared_ptr<GrayBox> evaluator_,
                                        size_t radius, Record& _recording)
-    : recording(_recording) {
+    : improvements(radius),
+      recording(_recording) {
   recording.start_clock();
   evaluator = evaluator_;
   // Construct neighborhood
@@ -33,6 +34,7 @@ ImprovementHarness::ImprovementHarness(shared_ptr<GrayBox> evaluator_,
   single_bit_moves.resize(evaluator->length(), -1);
 
   for (size_t m = 0; m < moves_.size(); m++) {
+    improvements[moves_[m].size() - 1].insert(m);
     if (moves_[m].size() == 1) {
       single_bit_moves[moves_[m][0]] = m;
     }
@@ -44,7 +46,6 @@ ImprovementHarness::ImprovementHarness(shared_ptr<GrayBox> evaluator_,
     }
   }
 
-  options.resize(moves_.size());
   delta.resize(moves_.size(), 0);
 
   fitness = 0;
@@ -67,18 +68,32 @@ int ImprovementHarness::attach(vector<bool>* solution_) {
       flip_move(move);
     }
   }
-  options.all_on();
+  for (auto& options : improvements) {
+    options.all_on();
+  }
   recording.record(fitness);
   return fitness;
 }
 
 int ImprovementHarness::optimize(Random & rand) {
-  while (options.size()) {
-    auto move = options.random(rand);
-    if (0 < delta[move]) {
-      make_move(move);  // Put in move
+  bool improvement_found = true;
+  while (improvement_found) {
+    improvement_found = false;
+    // scan improvements until a step size has an improving move
+    for (size_t step_size = 0;
+        step_size < improvements.size() and not improvement_found;
+        step_size++) {
+      // scan potential improvements until an actual improving move is found
+      while (improvements[step_size].size() and not improvement_found) {
+        auto move = improvements[step_size].random(rand);
+        if (0 < delta[move]) {
+          make_move(move);  // Put in move
+          improvement_found = true;
+        }
+        improvements[step_size].turn_off(move);
+      }
+
     }
-    options.turn_off(move);
   }
   return fitness;
 }
@@ -87,7 +102,9 @@ void ImprovementHarness::set_check_point() {
   saved_delta.clear();
   flipped.clear();
   check_point_fitness = fitness;
-  options.all_off();
+  for (auto& options : improvements) {
+    options.all_off();
+  }
 }
 
 int ImprovementHarness::revert() {
@@ -121,7 +138,7 @@ int ImprovementHarness::make_move(size_t move) {
         saved_delta[next] = delta[next];
       }
       delta[next] += (pre_move - just_next + move_next - just_move);
-      options.turn_on(next);
+      improvements[moves_[next].size() - 1].turn_on(next);
     }
   }
   for (const auto& bit : moves_[move]) {
