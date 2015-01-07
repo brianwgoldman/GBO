@@ -64,7 +64,7 @@ UnrestrictedNKQ::UnrestrictedNKQ(Configuration& config) {
   }
 
   // Generate the table
-  auto generator = std::uniform_int_distribution<size_t>(0, 2 << k);
+  auto generator = std::uniform_int_distribution<size_t>(0, (2 << k) - 1);
   maximum = 0;
   for (auto& row : table) {
     size_t best = 0;
