@@ -18,7 +18,6 @@ int TUX::iterate() {
   rand_vector(rand, solution);
   harness.attach(&solution);
   auto fitness = harness.optimize(rand);
-  auto best_offspring = solution;
   for (size_t level = 0; level < tournament.size(); level++) {
     if (empty[level]) {
       // more efficient than assignment
@@ -28,8 +27,7 @@ int TUX::iterate() {
       return fitness;
     } else {
       auto best_fitness = fitness - 1;
-      for (int repeat = 0; repeat < (1 << level); repeat++) {
-        vector<bool> offspring(solution);
+      for (int repeat = 0; repeat < (2 << level); repeat++) {
         for (size_t gene = 0; gene < offspring.size(); gene++) {
           // if parents are equal, copy from parent
           if (tournament[level][gene] == solution[gene]) {
@@ -45,31 +43,13 @@ int TUX::iterate() {
           best_offspring.swap(offspring);
           best_fitness = new_fitness;
         }
-        // TODO Decide if this method is worth the complexity
-        /*
-        if (fitness < fitnesses[level]) {
-          if (fitness < new_fitness) {
-            // more efficient than assignment
-            swap(solution, offspring);
-            fitness = new_fitness;
-          }
-        } else {
-          if (fitnesses[level] < new_fitness) {
-            tournament[level].swap(offspring);
-            fitnesses[level] = new_fitness;
-          }
-        }
-        if (tournament[level] == solution) {
-          break;
-        }
-        //*/
       }
       if (fitness < best_fitness) {
         fitness = best_fitness;
         solution.swap(best_offspring);
       }
       // stored is best
-      if (fitness <= fitnesses[level]) {
+      if (fitness < fitnesses[level]) {
         fitness = fitnesses[level];
         solution.swap(tournament[level]);
       }
