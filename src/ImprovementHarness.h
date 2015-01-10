@@ -42,7 +42,9 @@ class ImprovementHarness {
   int attach(vector<bool>* solution_);
   int optimize(Random & rand);
   int evaluate(const vector<bool>& solution_) {
-    return evaluator->evaluate(solution_);
+    auto fit = evaluator->evaluate(solution_);
+    recording.record(fit);
+    return fit;
   }
 
   void set_check_point();

@@ -5,6 +5,8 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/BlackBoxHC.cpp \
+../src/BlackBoxP3.cpp \
+../src/BlackBoxPopulation.cpp \
 ../src/Configuration.cpp \
 ../src/Evaluation.cpp \
 ../src/HammingBallHC.cpp \
@@ -19,6 +21,8 @@ CPP_SRCS += \
 
 OBJS += \
 ./src/BlackBoxHC.o \
+./src/BlackBoxP3.o \
+./src/BlackBoxPopulation.o \
 ./src/Configuration.o \
 ./src/Evaluation.o \
 ./src/HammingBallHC.o \
@@ -33,6 +37,8 @@ OBJS += \
 
 CPP_DEPS += \
 ./src/BlackBoxHC.d \
+./src/BlackBoxP3.d \
+./src/BlackBoxPopulation.d \
 ./src/Configuration.d \
 ./src/Evaluation.d \
 ./src/HammingBallHC.d \

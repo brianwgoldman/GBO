@@ -11,6 +11,7 @@
 #include "Pyramid.h"
 #include "HammingBallHC.h"
 #include "BlackBoxHC.h"
+#include "BlackBoxP3.h"
 
 #include <unordered_map>
 
@@ -24,6 +25,7 @@ static std::unordered_map<string, pointer> lookup({
   { "HammingBallHC", HammingBallHC::create },
   { "BlackBoxHC", BlackBoxHC::create },
   { "TUX", TUX::create },
+  { "BlackBoxP3", BlackBoxP3::create },
 });
 }
 

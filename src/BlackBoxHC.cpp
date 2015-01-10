@@ -10,13 +10,11 @@
 BlackBoxHC::BlackBoxHC(Random& _rand, Configuration& _config,
                        ImprovementHarness& _harness)
     : Optimizer(_rand, _config, _harness) {
-  options.resize(length);
-  iota(options.begin(), options.end(), 0);
 }
 
-int BlackBoxHC::iterate() {
-  rand_vector(rand, solution);
-  int fitness = harness.evaluate(solution);
+int BlackBoxImprovement(Random& rand, vector<bool> & solution, int fitness, ImprovementHarness& harness) {
+  vector<int> options(solution.size());
+  iota(options.begin(), options.end(), 0);
   int new_fitness;
   // keep track of locations already tried since last improvement
   std::unordered_set<int> tried;
@@ -44,7 +42,13 @@ int BlackBoxHC::iterate() {
       }
       tried.insert(index);
     }
-  } while (tried.size() < length);
+  } while (tried.size() < solution.size());
   return fitness;
+}
+
+int BlackBoxHC::iterate() {
+  rand_vector(rand, solution);
+  int fitness = harness.evaluate(solution);
+  return BlackBoxImprovement(rand, solution, fitness, harness);
 }
 
