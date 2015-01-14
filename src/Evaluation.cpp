@@ -57,9 +57,13 @@ UnrestrictedNKQ::UnrestrictedNKQ(Configuration& config) {
   Random rand(rng_seed);
   for (size_t i = 0; i < length_; i++) {
     shuffle(options.begin(), options.end(), rand);
+    // starts out depending on itself
     epistasis_.push_back(vector<size_t>(1, i));
-    for (size_t x = 0; x < k; x++) {
-      epistasis_.back().push_back(options[x]);
+    for (size_t x = 0; epistasis_.back().size() <= k; x++) {
+      // ensure no self dependencies
+      if (options[x] != i) {
+        epistasis_.back().push_back(options[x]);
+      }
     }
   }
 

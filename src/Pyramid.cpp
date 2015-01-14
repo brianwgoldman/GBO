@@ -56,6 +56,35 @@ void Pyramid::sfx_tree(vector<vector<size_t>> & blocks) {
   blocks.erase(blocks.begin(), blocks.begin() + length);
 }
 
+void Pyramid::alt_tree(vector<vector<size_t>> & blocks) {
+  size_t usable = sfx_options.size();
+  vector<size_t> sizes(2);
+  sizes[0] = uniform_int_distribution<size_t>(1, length - 1)(rand);
+  sizes[1] = length - sizes[0];
+
+  for (size_t sizes_index = 0; sizes_index < sizes.size(); sizes_index++) {
+    size_t working_size = sizes[sizes_index];
+    if (working_size > 1) {
+      sizes.push_back(uniform_int_distribution<size_t>(1, working_size - 1)(rand));
+      sizes.push_back(working_size - sizes.back());
+    }
+
+    unordered_set<size_t> block;
+    while (block.size() < working_size) {
+      // Get a random subfunction
+      usable--;
+      size_t sub_index = uniform_int_distribution<size_t>(0, usable)(rand);
+      const auto& sub = harness.epistasis()[sfx_options[sub_index]];
+      swap(sfx_options[sub_index], sfx_options[usable]);
+      block.insert(sub.begin(), sub.end());
+      if (usable == 0) {
+        usable = length;
+      }
+    }
+    blocks.emplace_back(block.begin(), block.end());
+  }
+}
+
 void Pyramid::add_if_unique(const vector<bool>& candidate, size_t level) {
   if (seen.count(candidate) == 0) {
     if (solutions.size() == level) {
@@ -82,11 +111,12 @@ int Pyramid::iterate() {
       improved = false;
     }
     vector<vector<size_t>> blocks;
-    sfx_tree(blocks);
+    alt_tree(blocks);
     shuffle(blocks.begin(), blocks.end(), rand);
 
     auto& options = selector_tool[level];
-    size_t limiter = min(blocks.size(), solutions[level].size());
+    //size_t limiter = min(blocks.size(), solutions[level].size());
+    size_t limiter = blocks.size();
     for (size_t index = 0; index < limiter; index++) {
       size_t limit = options.size();
       harness.set_check_point();
