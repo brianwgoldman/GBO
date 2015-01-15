@@ -23,6 +23,7 @@ class Pyramid : public Optimizer {
   vector<vector<size_t>> selector_tool;
   void sfx_tree(vector<vector<size_t>> & blocks);
   void alt_tree(vector<vector<size_t>> & blocks);
+  void cis_tree(vector<vector<size_t>> & blocks);
   void add_if_unique(const vector<bool>& candidate, size_t level);
 public:
   Pyramid(Random& _rand, Configuration& _config, ImprovementHarness& _harness);

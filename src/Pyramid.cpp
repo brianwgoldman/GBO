@@ -85,6 +85,23 @@ void Pyramid::alt_tree(vector<vector<size_t>> & blocks) {
   }
 }
 
+void Pyramid::cis_tree(vector<vector<size_t>> & blocks) {
+  uniform_int_distribution<size_t> get_start(0, length - 1);
+  vector<size_t> sizes(2);
+  sizes[0] = uniform_int_distribution<size_t>(1, length - 1)(rand);
+  sizes[1] = length - sizes[0];
+
+  for (size_t sizes_index = 0; sizes_index < sizes.size(); sizes_index++) {
+    size_t working_size = sizes[sizes_index];
+    if (working_size > 1) {
+      sizes.push_back(uniform_int_distribution<size_t>(1, working_size - 1)(rand));
+      sizes.push_back(working_size - sizes.back());
+    }
+    const auto& subset = random_induced_subgraph(harness.adjacency(), get_start(rand), working_size, rand);
+    blocks.emplace_back(subset.begin(), subset.end());
+  }
+}
+
 void Pyramid::add_if_unique(const vector<bool>& candidate, size_t level) {
   if (seen.count(candidate) == 0) {
     if (solutions.size() == level) {
@@ -111,7 +128,7 @@ int Pyramid::iterate() {
       improved = false;
     }
     vector<vector<size_t>> blocks;
-    alt_tree(blocks);
+    cis_tree(blocks);
     shuffle(blocks.begin(), blocks.end(), rand);
 
     auto& options = selector_tool[level];

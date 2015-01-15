@@ -63,7 +63,7 @@ int main(int argc, char * argv[]) {
       and best < gray_box->max_fitness());
   recording.dump(config);
 
-  cout << endl << "----------------Time: " << elapsed << " Best: " << best
+  cout << endl << "----------------Minutes: " << elapsed << " Best: " << best
        << endl;
   return 0;
 }

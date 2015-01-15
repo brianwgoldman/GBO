@@ -16,7 +16,7 @@ ImprovementHarness::ImprovementHarness(shared_ptr<GrayBox> evaluator_,
   recording.start_clock();
   evaluator = evaluator_;
   // Construct neighborhood
-  unordered_map<size_t, unordered_set<size_t>> graph = build_graph(evaluator);
+  build_graph(evaluator, graph);
   moves_ = k_order_subgraphs(graph, radius);
 
   const auto& subfunctions = evaluator->epistasis();
