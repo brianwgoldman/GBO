@@ -6,9 +6,8 @@
  */
 #include "Neighborhood.h"
 
-unordered_map<size_t, unordered_set<size_t>> build_graph(
-    shared_ptr<GrayBox> evaluator) {
-  unordered_map<size_t, unordered_set<size_t>> graph;
+void build_graph(shared_ptr<GrayBox> evaluator,
+                 unordered_map<size_t, unordered_set<size_t>> & graph) {
   const auto& subfunctions = evaluator->epistasis();
   for (auto subfunction : subfunctions) {
     for (auto x : subfunction) {
@@ -19,7 +18,6 @@ unordered_map<size_t, unordered_set<size_t>> build_graph(
       }
     }
   }
-  return graph;
 }
 
 vector<vector<size_t>> k_order_subgraphs(
@@ -65,3 +63,20 @@ void recurse(const unordered_map<size_t, unordered_set<size_t>>& graph,
   }
 }
 
+unordered_set<size_t> random_induced_subgraph(const unordered_map<size_t, unordered_set<size_t>> & graph, size_t start, size_t k, Random& rand) {
+  unordered_set<size_t> subset;
+  vector<size_t> options(1, start);
+  while (options.size() > 0 and subset.size() < k) {
+    size_t index = std::uniform_int_distribution<size_t>(0, options.size() - 1)(rand);
+    size_t working = options[index];
+    std::swap(options[index], options.back());
+    options.pop_back();
+    const auto& result =  subset.insert(working);
+    // If it was inserted
+    if (result.second) {
+      const auto& adjacent = graph.at(working);
+      options.insert(options.end(), adjacent.begin(), adjacent.end());
+    }
+  }
+  return subset;
+}

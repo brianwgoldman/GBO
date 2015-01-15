@@ -35,6 +35,8 @@ class ImprovementHarness {
   unordered_map<size_t, int> saved_delta;
   unordered_set<size_t> flipped;
 
+  unordered_map<size_t, unordered_set<size_t>> graph;
+
  public:
   ImprovementHarness(shared_ptr<GrayBox> evaluator_, size_t radius,
                      Record& _recording);
@@ -59,6 +61,9 @@ class ImprovementHarness {
   }
   int max_fitness() const {
     return evaluator->max_fitness();
+  }
+  const unordered_map<size_t, unordered_set<size_t>>& adjacency() const {
+    return graph;
   }
 };
 
