@@ -10,7 +10,7 @@ begin_time = time.time()
 runs = 50
 job_minutes = 230
 run_minutes = 180
-folder = "radius"
+folder = "length"
 jobname = sys.argv[1]
 
 
@@ -41,36 +41,33 @@ def signal_handler(signal, frame):
         raise Exception('Signal received, exiting')
 signal.signal(signal.SIGINT, signal_handler)
 
+tuning = {"NearestNeighborNKQ": {"Pyramid": 1, "TUX": 5, "HammingBallHC": 5, "BlackBoxP3": 1},
+          "UnrestrictedNKQ": {"Pyramid": 2, "TUX": 2, "HammingBallHC": 3, "BlackBoxP3": 1}}
+
 fill = {"minutes": run_minutes}
 for fill['pseed'] in range(runs):
   fill['seed'] = fill['pseed'] + 1
-  for fill['problem'], fill['length'] in [("NearestNeighborNKQ", 6000), ("UnrestrictedNKQ", 6000)]:
-    for fill['k'] in [2, 3, 4, 5, 1]:
+  for fill['problem'], fill['k'] in [("UnrestrictedNKQ", 4), ("NearestNeighborNKQ", 4)]:
+    for fill['length'] in [200, 400, 600, 800, 1000, 2000, 4000, 6000, 8000, 10000]:
       problem_folder = path.join(folder, "%(problem)s_%(length)0.5i_%(k)0.2i"%fill)
       try:
         makedirs(problem_folder)
       except OSError:
         pass
-      for fill['radius'] in [1, 2, 3, 4, 5, 6]:
+      for fill['solver'] in ["Pyramid", "TUX", "HammingBallHC", "BlackBoxP3"]:
         if fill['problem'] == "NearestNeighborNKQ":
-          if fill['k'] > 3 and fill['radius'] > 5:
+          if fill['solver'] == "BlackBoxP3" and fill['length'] > 1000:
             continue
-          if fill['k'] > 4 and fill['radius'] > 4:
+          if fill['solver'] in ['TUX', 'HammingBallHC'] and fill['length'] > 8000:
             continue
         if fill['problem'] == "UnrestrictedNKQ":
-          if fill['k'] > 1 and fill['radius'] > 4:
-            continue
-          if fill['k'] > 2 and fill['radius'] > 3:
-            continue
-          if fill['k'] > 4 and fill['radius'] > 2:
-            continue
-                                                      
-        for fill['solver'] in ["Pyramid", "TUX", "HammingBallHC"]:
-          fill['filename'] = path.join(problem_folder, "%(solver)s_%(radius)0.2i_%(pseed)0.5i" % (fill))
-          elapsed_minutes = (time.time() - begin_time) / 60
-          if elapsed_minutes + run_minutes >= job_minutes:
-            print "No time for new job, already ran for", elapsed_minutes, "minutes"
-            sys.exit()
-          try_run_fill(base_string, fill)
+          pass
+        fill['radius'] = tuning[fill['problem']][fill['solver']]
+        fill['filename'] = path.join(problem_folder, "%(solver)s_%(radius)0.2i_%(pseed)0.5i" % (fill))
+        elapsed_minutes = (time.time() - begin_time) / 60
+        if elapsed_minutes + run_minutes >= job_minutes:
+          print "No time for new job, already ran for", elapsed_minutes, "minutes"
+          sys.exit()
+        try_run_fill(base_string, fill)
 
 open(path.join(folder, "finished.txt"), 'w').close()
