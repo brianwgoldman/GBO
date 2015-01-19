@@ -102,6 +102,21 @@ private:
   size_t solve(vector<bool>& solution, bool maximize);
 };
 
+class IsingSpinGlass : public GrayBox {
+ public:
+  IsingSpinGlass(Configuration& config);
+  int evaluate(size_t subfunction, const vector<bool> & solution) override;
+  create_graybox(IsingSpinGlass);
+  int max_fitness() {return maximum;}
+
+ private:
+  int maximum;
+  // used to quickly convert a bit to a sign.
+  std::array<int, 2> bit_to_sign = { { -1, 1 } };
+  // the sign of the edge
+  vector<int> spins;
+};
+
 // This maximum satisfiability problem generates a set of random 3 literals
 // clauses, where literals may be negated, assigning fitness equal to the
 // number of clauses that contain at least one literal that evaluates to true.
@@ -148,6 +163,7 @@ static std::unordered_map<string, pointer> lookup({
   { "DeceptiveTrap", DeceptiveTrap::create },
   { "NearestNeighborNKQ", NearestNeighborNKQ::create },
   { "UnrestrictedNKQ", UnrestrictedNKQ::create },
+  { "IsingSpinGlass", IsingSpinGlass::create },
   { "MAXSAT", MAXSAT::create },
   { "MAXSAT_File", MAXSAT_File::create },
   { "MAXCUT_File", MAXCUT_File::create },

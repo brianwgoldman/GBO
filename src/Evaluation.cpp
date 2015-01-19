@@ -300,6 +300,39 @@ size_t NearestNeighborNKQ::solve(vector<bool>& solution, bool maximize) {
   return fitness;
 }
 
+// Read in the problem from a file and set up the evaluation table
+IsingSpinGlass::IsingSpinGlass(Configuration& config) {
+  length_ = config.get<int>("length");
+  int rng_seed = config.get<int>("problem_seed");
+
+  // Build up the filename where this problem is stored
+  string filename = config.get<string>("problem_folder");
+  filename += +"IsingSpinGlass_";
+  filename += config.get<string>("ising_type") + "_";
+  filename += config.get<string>("length") + "_";
+  filename += to_string(rng_seed) + ".txt";
+  ifstream in(filename);
+  if (!in) {
+    throw invalid_argument(
+        "IsingSpinGlass data file does not exist: " + filename);
+  }
+  in >> maximum;
+  // Turn a minimization problem into a maximization problem
+  maximum = - maximum;
+  size_t x, y;
+  int value;
+  while (in >> x >> y >> value) {
+    epistasis_.push_back({x, y});
+    spins.push_back(value);
+  }
+  in.close();
+}
+
+int IsingSpinGlass::evaluate(size_t sub, const vector<bool>& solution) {
+  return bit_to_sign[solution[epistasis_[sub][0]]] * spins[sub] *
+         bit_to_sign[solution[epistasis_[sub][1]]];
+}
+
 // Generates the new problem each time its needed, based on
 // the problem see and run number
 MAXSAT::MAXSAT(Configuration& config) {
