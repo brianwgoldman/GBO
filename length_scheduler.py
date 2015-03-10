@@ -42,13 +42,15 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 tuning = {"NearestNeighborNKQ": {"Pyramid": 1, "TUX": 5, "HammingBallHC": 5, "BlackBoxP3": 1},
-          "UnrestrictedNKQ": {"Pyramid": 2, "TUX": 2, "HammingBallHC": 3, "BlackBoxP3": 1}}
+          "UnrestrictedNKQ": {"Pyramid": 2, "TUX": 2, "HammingBallHC": 3, "BlackBoxP3": 1},
+          "IsingSpinGlass": {"Pyramid": 1, "TUX": 6, "HammingBallHC": 6, "BlackBoxP3": 1}}
 
 fill = {"minutes": run_minutes}
 for fill['pseed'] in range(runs):
   fill['seed'] = fill['pseed'] + 1
-  for fill['problem'], fill['k'] in [("UnrestrictedNKQ", 4), ("NearestNeighborNKQ", 4)]:
-    for fill['length'] in [200, 400, 600, 800, 1000, 2000, 4000, 6000, 8000, 10000]:
+  for fill['problem'], fill['k'] in [("IsingSpinGlass", 1)]:
+    #for fill['length'] in [200, 400, 600, 800, 1000, 2000, 4000, 6000, 8000, 10000]:
+    for fill['length'] in [196, 400, 625, 784, 1024, 1296, 1600, 2025, 2916, 4096, 6084]:
       problem_folder = path.join(folder, "%(problem)s_%(length)0.5i_%(k)0.2i"%fill)
       try:
         makedirs(problem_folder)
@@ -61,7 +63,11 @@ for fill['pseed'] in range(runs):
           if fill['solver'] in ['TUX', 'HammingBallHC'] and fill['length'] > 8000:
             continue
         if fill['problem'] == "UnrestrictedNKQ":
-          pass
+          if fill['solver'] == "BlackBoxP3" and fill['length'] > 1000:
+            continue
+        if fill['problem'] == "IsingSpinGlass":
+          if fill['solver'] == "BlackBoxP3" and fill['length'] >= 2916:
+            continue
         fill['radius'] = tuning[fill['problem']][fill['solver']]
         fill['filename'] = path.join(problem_folder, "%(solver)s_%(radius)0.2i_%(pseed)0.5i" % (fill))
         elapsed_minutes = (time.time() - begin_time) / 60

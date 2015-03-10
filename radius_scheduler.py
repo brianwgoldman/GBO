@@ -44,8 +44,10 @@ signal.signal(signal.SIGINT, signal_handler)
 fill = {"minutes": run_minutes}
 for fill['pseed'] in range(runs):
   fill['seed'] = fill['pseed'] + 1
-  for fill['problem'], fill['length'] in [("NearestNeighborNKQ", 6000), ("UnrestrictedNKQ", 6000)]:
+  for fill['problem'], fill['length'] in [("NearestNeighborNKQ", 6000), ("UnrestrictedNKQ", 6000), ("IsingSpinGlass", 6084)]:
     for fill['k'] in [2, 3, 4, 5, 1]:
+      if fill['problem'] == "IsingSpinGlass" and fill['k'] != 1:
+        continue
       problem_folder = path.join(folder, "%(problem)s_%(length)0.5i_%(k)0.2i"%fill)
       try:
         makedirs(problem_folder)
