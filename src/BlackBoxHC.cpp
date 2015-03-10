@@ -1,9 +1,7 @@
-/*
- * BlackBoxHC.cpp
- *
- *  Created on: Oct 21, 2014
- *      Author: goldman
- */
+// Brian Goldman
+
+// Provides an implementation of performing hill climbing in the black
+// box domain. Useful for doing timing comparisons and used by Black Box P3.
 
 #include "BlackBoxHC.h"
 
@@ -12,7 +10,10 @@ BlackBoxHC::BlackBoxHC(Random& _rand, Configuration& _config,
     : Optimizer(_rand, _config, _harness) {
 }
 
-int BlackBoxImprovement(Random& rand, vector<bool> & solution, int fitness, ImprovementHarness& harness) {
+// Applies first improving moves until "solution" is a local optima
+int BlackBoxImprovement(Random& rand, vector<bool> & solution, int fitness,
+                        ImprovementHarness& harness) {
+  // Tool for choosing random indices quickly
   vector<int> options(solution.size());
   iota(options.begin(), options.end(), 0);
   int new_fitness;
@@ -46,6 +47,7 @@ int BlackBoxImprovement(Random& rand, vector<bool> & solution, int fitness, Impr
   return fitness;
 }
 
+// Generate a random solution and bring it to a local optima
 int BlackBoxHC::iterate() {
   rand_vector(rand, solution);
   int fitness = harness.evaluate(solution);

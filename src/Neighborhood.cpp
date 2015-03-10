@@ -63,7 +63,9 @@ void recurse(const unordered_map<size_t, unordered_set<size_t>>& graph,
   }
 }
 
-unordered_set<size_t> random_induced_subgraph(const unordered_map<size_t, unordered_set<size_t>> & graph, size_t start, size_t k, Random& rand) {
+unordered_set<size_t> random_induced_subgraph(
+    const unordered_map<size_t, unordered_set<size_t>> & graph, size_t start,
+    size_t k, Random& rand) {
   unordered_set<size_t> subset;
   vector<size_t> options(1, start);
   while (options.size() > 0 and subset.size() < k) {
@@ -71,7 +73,7 @@ unordered_set<size_t> random_induced_subgraph(const unordered_map<size_t, unorde
     size_t working = options[index];
     std::swap(options[index], options.back());
     options.pop_back();
-    const auto& result =  subset.insert(working);
+    const auto& result = subset.insert(working);
     // If it was inserted
     if (result.second) {
       const auto& adjacent = graph.at(working);

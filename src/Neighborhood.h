@@ -27,5 +27,7 @@ void recurse(const unordered_map<size_t, unordered_set<size_t>>& graph,
              unordered_set<size_t> & prevopen, size_t radius,
              vector<vector<size_t>> & found);
 
-unordered_set<size_t> random_induced_subgraph(const unordered_map<size_t, unordered_set<size_t>> & graph, size_t start, size_t k, Random& rand);
+unordered_set<size_t> random_induced_subgraph(
+    const unordered_map<size_t, unordered_set<size_t>> & graph, size_t start,
+    size_t k, Random& rand);
 #endif /* NEIGHBORHOOD_H_ */

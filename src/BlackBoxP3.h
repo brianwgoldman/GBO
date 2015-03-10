@@ -14,17 +14,16 @@
 class BlackBoxP3 : public Optimizer {
  public:
   BlackBoxP3(Random& _rand, Configuration& _config,
-          ImprovementHarness& _evaluator)
+             ImprovementHarness& _evaluator)
       : Optimizer(_rand, _config, _evaluator) {
   }
   // Peforms one complete iteration of
   // * random generation
   // * hill climbing
   // * crossover with each level of the pyramid (climb function)
-  int iterate() override;
-  create_optimizer(BlackBoxP3);
+  int iterate() override;create_optimizer(BlackBoxP3);
 
- private:
+private:
   // Iteratively improves the solution using the pyramid of populations
   // leverages the Population class extensively
   void climb(vector<bool> & solution, int & fitness);

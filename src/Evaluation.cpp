@@ -318,19 +318,19 @@ IsingSpinGlass::IsingSpinGlass(Configuration& config) {
   }
   in >> maximum;
   // Turn a minimization problem into a maximization problem
-  maximum = - maximum;
+  maximum = -maximum;
   size_t x, y;
   int value;
   while (in >> x >> y >> value) {
-    epistasis_.push_back({x, y});
+    epistasis_.push_back( { x, y });
     spins.push_back(value);
   }
   in.close();
 }
 
 int IsingSpinGlass::evaluate(size_t sub, const vector<bool>& solution) {
-  return bit_to_sign[solution[epistasis_[sub][0]]] * spins[sub] *
-         bit_to_sign[solution[epistasis_[sub][1]]];
+  return bit_to_sign[solution[epistasis_[sub][0]]] * spins[sub]
+      * bit_to_sign[solution[epistasis_[sub][1]]];
 }
 
 // Generates the new problem each time its needed, based on

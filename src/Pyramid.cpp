@@ -11,7 +11,8 @@ using namespace std;
 
 Pyramid::Pyramid(Random& _rand, Configuration& _config,
                  ImprovementHarness& _harness)
-    : Optimizer(_rand, _config, _harness), sfx_options(harness.epistasis().size()) {
+    : Optimizer(_rand, _config, _harness),
+      sfx_options(harness.epistasis().size()) {
   iota(sfx_options.begin(), sfx_options.end(), 0);
 }
 
@@ -97,7 +98,9 @@ void Pyramid::cis_tree(vector<vector<size_t>> & blocks) {
       sizes.push_back(uniform_int_distribution<size_t>(1, working_size - 1)(rand));
       sizes.push_back(working_size - sizes.back());
     }
-    const auto& subset = random_induced_subgraph(harness.adjacency(), get_start(rand), working_size, rand);
+    const auto& subset = random_induced_subgraph(harness.adjacency(),
+                                                 get_start(rand), working_size,
+                                                 rand);
     blocks.emplace_back(subset.begin(), subset.end());
   }
 }

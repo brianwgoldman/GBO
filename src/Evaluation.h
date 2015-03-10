@@ -109,7 +109,7 @@ class IsingSpinGlass : public GrayBox {
   create_graybox(IsingSpinGlass);
   int max_fitness() {return maximum;}
 
- private:
+private:
   int maximum;
   // used to quickly convert a bit to a sign.
   std::array<int, 2> bit_to_sign = { { -1, 1 } };

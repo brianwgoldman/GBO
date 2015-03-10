@@ -145,7 +145,8 @@ void Population::rebuild_tree(Random& rand) {
 
     // If the distance between the joining clusters is zero, remove them
     // (zero is anything less than 4 epsilon)
-    if (distances[first][second] <= std::numeric_limits<double>::epsilon() * 4) {
+    if (distances[first][second]
+        <= std::numeric_limits<double>::epsilon() * 4) {
       useful[first] = false;
       useful[second] = false;
     }
