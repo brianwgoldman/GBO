@@ -1,9 +1,7 @@
-/*
- * Pyramid.cpp
- *
- *  Created on: Jun 26, 2013
- *      Author: goldman
- */
+// Brian Goldman
+
+// Implementation of P3 for Black Box Problem Solving.
+// Used for timing comparison purposes.
 
 #include "BlackBoxP3.h"
 #include <sstream>

@@ -1,10 +1,7 @@
-/*
- * HammingBall.cpp
- *
- *  Created on: Oct 15, 2014
- *      Author: goldman
- */
+// Brian Goldman
 
+// Wrapper for using the Improvement Harness to perform repeated
+// local search
 #include "HammingBallHC.h"
 
 HammingBallHC::HammingBallHC(Random& _rand, Configuration& _config,
@@ -12,6 +9,8 @@ HammingBallHC::HammingBallHC(Random& _rand, Configuration& _config,
     : Optimizer(_rand, _config, _harness) {
 }
 
+// Generate a random solution and use the Improvement Harness
+// to bring it to a local optima.
 int HammingBallHC::iterate() {
   rand_vector(rand, solution);
   harness.attach(&solution);

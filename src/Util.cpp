@@ -22,6 +22,7 @@ void print(const vector<bool> & vect, std::ostream & out) {
   out << std::endl;
 }
 
+// Extract bool vector from a stream of 0 and 1 characters
 void read(vector<bool> & vect, std::istream & in) {
   std::string temp;
   in >> temp;

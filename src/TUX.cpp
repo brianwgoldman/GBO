@@ -1,10 +1,5 @@
-/*
- * SAC.cpp
- *
- *  Created on: Oct 15, 2014
- *      Author: goldman
- */
-
+// Tournament Uniform Crossover is meant to be a very simple algorithm
+// for combining hamming ball hill climbing with global search
 #include "TUX.h"
 
 TUX::TUX(Random& _rand, Configuration& _config, ImprovementHarness& _harness)
@@ -14,11 +9,17 @@ TUX::TUX(Random& _rand, Configuration& _config, ImprovementHarness& _harness)
   best_offspring.resize(length);
 }
 
+// Performs a single iteration of TUX, which always starts
+// with a new random solution being improved via r-bit hamming ball
+// hill climbing. It can also include uniform crossover depending
+// on the current state of search.
 int TUX::iterate() {
   rand_vector(rand, solution);
   harness.attach(&solution);
   auto fitness = harness.optimize(rand);
+  // Scan up the tournament for opponents
   for (size_t level = 0; level < tournament.size(); level++) {
+    // There is no opponent yet, so wait for one to be made later
     if (empty[level]) {
       // more efficient than assignment
       tournament[level].swap(solution);
@@ -26,6 +27,8 @@ int TUX::iterate() {
       empty[level] = false;
       return fitness;
     } else {
+      // Generate 2**(level+1) solutions using uniform crossover
+      // and keep the best.
       auto best_fitness = fitness - 1;
       for (int repeat = 0; repeat < (2 << level); repeat++) {
         for (size_t gene = 0; gene < offspring.size(); gene++) {
@@ -37,6 +40,7 @@ int TUX::iterate() {
             offspring[gene] = rbit(rand);
           }
         }
+        // Apply r-bit hamming ball hill climbing
         harness.attach(&offspring);
         int new_fitness = harness.optimize(rand);
         if (best_fitness < new_fitness) {
@@ -44,16 +48,17 @@ int TUX::iterate() {
           best_fitness = new_fitness;
         }
       }
+      // Solution becomes best offspring
       if (fitness < best_fitness) {
         fitness = best_fitness;
         solution.swap(best_offspring);
       }
-      // stored is best
+      // if other parent is better than solution
       if (fitness < fitnesses[level]) {
         fitness = fitnesses[level];
         solution.swap(tournament[level]);
       }
-      // current is best
+      // solution is now the best, so empty the level
       empty[level] = true;
     }
   }

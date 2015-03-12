@@ -1,5 +1,8 @@
 // Brian Goldman
 
+// The Black Box version of P3. Does not use any partial
+// evaluations or interaction information.
+// Included for timing comparison purposes.
 #ifndef BLACKBOXP3_H_
 #define BLACKBOXP3_H_
 
@@ -21,7 +24,8 @@ class BlackBoxP3 : public Optimizer {
   // * random generation
   // * hill climbing
   // * crossover with each level of the pyramid (climb function)
-  int iterate() override;create_optimizer(BlackBoxP3);
+  int iterate() override;
+  create_optimizer(BlackBoxP3);
 
 private:
   // Iteratively improves the solution using the pyramid of populations

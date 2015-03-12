@@ -1,9 +1,7 @@
-/*
- * HammingBallHC.h
- *
- *  Created on: Oct 15, 2014
- *      Author: goldman
- */
+// Brian Goldman
+
+// Performs efficient r-bit hamming ball hill climbing
+// leveraging the Improvement Harness.
 
 #ifndef HAMMINGBALLHC_H_
 #define HAMMINGBALLHC_H_
@@ -14,7 +12,8 @@ class HammingBallHC : public Optimizer {
  public:
   HammingBallHC(Random& _rand, Configuration& _config,
                 ImprovementHarness& _harness);
-  int iterate() override;create_optimizer(HammingBallHC);
+  int iterate() override;
+  create_optimizer(HammingBallHC);
 };
 
 #endif /* HAMMINGBALLHC_H_ */

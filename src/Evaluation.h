@@ -3,7 +3,8 @@
 // File defining how to perform evaluation of a solution
 // using multiple different evaluation functions.
 // Each problem type defines its own class inherited from
-// Evaluator and includes the create_evaluator macro.
+// GrayBox and includes the create_graybox macro to allow
+// for factory generation.
 
 #ifndef EVALUATION_H_
 #define EVALUATION_H_
@@ -53,18 +54,23 @@ class GrayBox {
 class DeceptiveTrap : public GrayBox {
  public:
   DeceptiveTrap(Configuration& config);
-  int evaluate(size_t subfunction, const vector<bool> & solution) override;create_graybox(DeceptiveTrap);
+  int evaluate(size_t subfunction, const vector<bool> & solution) override;
+  create_graybox(DeceptiveTrap);
   int max_fitness() {return length_;}
 
 private:
   size_t trap_size;
 };
 
+// Fitness landscape with N subfunctions, each reading from K+1
+// variables to look up a function value from a randomly generated table,
+// such that table entries must be 0 through 2**k - 1
 class UnrestrictedNKQ : public GrayBox {
 
  public:
   UnrestrictedNKQ(Configuration& config);
-  int evaluate(size_t subfunction, const vector<bool> & solution) override;create_graybox(UnrestrictedNKQ);
+  int evaluate(size_t subfunction, const vector<bool> & solution) override;
+  create_graybox(UnrestrictedNKQ);
   int max_fitness() {return maximum;}
 private:
   vector<vector<size_t> > table;
@@ -75,7 +81,8 @@ private:
 // The Nearest Neighbor NK problem randomly generates
 // a fitness landscape where the fitness of each bit
 // relies on the k bits directly following it in the genome.
-// Wraps around the end.
+// Wraps around the end. Function values are restricted to
+// the integers 0 through 2**k - 1
 class NearestNeighborNKQ : public GrayBox {
   // data structure type used in finding the extremes of the problem
   using trimap=std::unordered_map<size_t,
@@ -84,7 +91,8 @@ class NearestNeighborNKQ : public GrayBox {
 
  public:
   NearestNeighborNKQ(Configuration& config);
-  int evaluate(size_t subfunction, const vector<bool> & solution) override;create_graybox(NearestNeighborNKQ);
+  int evaluate(size_t subfunction, const vector<bool> & solution) override;
+  create_graybox(NearestNeighborNKQ);
   int max_fitness() {return maximum;}
 private:
   vector<vector<size_t> > table;
@@ -102,6 +110,10 @@ private:
   size_t solve(vector<bool>& solution, bool maximize);
 };
 
+// Read from a file, and ising spin glass is defined by a collections of edges
+// and their integer weights, with the goal to be to maximize the result
+// of xi * sij * xj, where xi and xj are either -1 or +1 and sij is the
+// edge weight connecting xi and xj.
 class IsingSpinGlass : public GrayBox {
  public:
   IsingSpinGlass(Configuration& config);
@@ -124,7 +136,8 @@ private:
 class MAXSAT : public GrayBox {
  public:
   MAXSAT(Configuration& config);
-  int evaluate(size_t subfunction, const vector<bool> & solution) override;create_graybox(MAXSAT);
+  int evaluate(size_t subfunction, const vector<bool> & solution) override;
+  create_graybox(MAXSAT);
   int max_fitness() {return epistasis_.size();}
 protected:
   MAXSAT() = default;
@@ -136,19 +149,23 @@ private:
     { { 1, 0, 0}}, { {1, 0, 0}}, { {0, 1, 1}}, { {1, 1, 1}},};
 };
 
+// Reads MAXSAT problems from a file.
 class MAXSAT_File : public GrayBox {
  public:
   MAXSAT_File(Configuration& config);
-  int evaluate(size_t subfunction, const vector<bool> & solution) override;create_graybox(MAXSAT_File);
+  int evaluate(size_t subfunction, const vector<bool> & solution) override;
+  create_graybox(MAXSAT_File);
   int max_fitness() {return epistasis_.size();}
 private:
   vector<vector<bool>> signs;
 };
 
+// Reads MAXCUT problems from a file.
 class MAXCUT_File : public GrayBox {
  public:
   MAXCUT_File(Configuration& config);
-  int evaluate(size_t subfunction, const vector<bool> & solution) override;create_graybox(MAXCUT_File);
+  int evaluate(size_t subfunction, const vector<bool> & solution) override;
+  create_graybox(MAXCUT_File);
   int max_fitness() {return maximum;}
 private:
   vector<int> weights;

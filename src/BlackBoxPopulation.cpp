@@ -1,7 +1,7 @@
 // Brian Goldman
 
-// Implements the population structure, which includes pairwise entropy
-// recording, linkage detection, and crossover
+// Performs linkage learning for Black Box P3.
+// Included for timing purposes only.
 
 #include "BlackBoxPopulation.h"
 #include <iostream>

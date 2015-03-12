@@ -65,17 +65,21 @@ class RandSet {
   }
   // Prevents "random" from returning index. Returns false if already off
   bool turn_off(const size_t& element);
+  // Turn on all elements
   void all_on() {
     border = elements.size();
   }
+  // Turn off all elements
   void all_off() {
     border = 0;
   }
 
+  // The number of elements currently in the set.
   size_t size() const {
     return border;
   }
 
+  // The total number of elements stored.
   size_t capacity() const {
     return elements.size();
   }

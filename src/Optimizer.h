@@ -32,11 +32,10 @@ class Optimizer {
   }
   virtual ~Optimizer() = default;
   // External tools interact with the optimizer by telling it to "iterate",
-  // and the optimizer will return true as long as it can continue to improve by iterating.
-  // As example, an iteration may perform a generation of evolution, with the optimizer returning
-  // false when convergence is detected.
+  // and the optimizer will return the fitness achieved during that iteration.
   virtual int iterate() = 0;
 
+  // Returns any optimization algorithm specific recording that was performed.
   virtual string finalize() {
     return string();
   }

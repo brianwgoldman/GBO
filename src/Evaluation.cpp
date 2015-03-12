@@ -1,7 +1,8 @@
 // Brian Goldman
 
 // Each evaluation object defines the "evaluate" function for how
-// to convert the vector of bool solution into a floating point fitness.
+// to convert the vector of bool solution and a subfunction number into
+// an integer fitness.
 
 #include "Evaluation.h"
 using namespace std;
@@ -13,6 +14,7 @@ evaluation::pointer Configuration::get(const string key) const {
   return evaluation::lookup[get<string>(key)];
 }
 
+// Used by black box methods to perform a full evaluation
 int GrayBox::evaluate(const vector<bool> & solution) {
   int total = 0;
   for (size_t sub = 0; sub < epistasis().size(); sub++) {
@@ -21,6 +23,7 @@ int GrayBox::evaluate(const vector<bool> & solution) {
   return total;
 }
 
+// The problem is broken into separable subsections, each fully deceptive
 DeceptiveTrap::DeceptiveTrap(Configuration& config)
     : trap_size(config.get<int>("trap_size")) {
   length_ = config.get<int>("length");
@@ -30,7 +33,7 @@ DeceptiveTrap::DeceptiveTrap(Configuration& config)
   }
 }
 
-// Iterate over traps, sum partial scores
+// Score a trap
 int DeceptiveTrap::evaluate(size_t subfunction, const vector<bool> & solution) {
   size_t partial = 0;
   for (auto index : epistasis_[subfunction]) {
@@ -46,12 +49,15 @@ int DeceptiveTrap::evaluate(size_t subfunction, const vector<bool> & solution) {
   return partial;
 }
 
+// Landscape of N random subfunctions, each of which depending on K+1
+// variables, returning one of Q unique values.
 UnrestrictedNKQ::UnrestrictedNKQ(Configuration& config) {
   k = config.get<int>("k");
   length_ = config.get<int>("length");
   table.resize(length_, vector<size_t>(2 << k, 0));
   int rng_seed = config.get<int>("problem_seed");
 
+  // Tool for selecting random unique dependencies
   vector<size_t> options(length_);
   iota(options.begin(), options.end(), 0);
   Random rand(rng_seed);
@@ -78,12 +84,12 @@ UnrestrictedNKQ::UnrestrictedNKQ(Configuration& config) {
         best = entry;
       }
     }
-    // keeps track of the (possibly unreachable) upper bound
+    // keeps track of the (likely unreachable) upper bound
     maximum += best;
   }
 }
 
-// Use the table to evaluate the quality of the solution
+// Use the table to evaluate the quality of the solution for a subfunction
 int UnrestrictedNKQ::evaluate(size_t subfunction,
                               const vector<bool> & solution) {
   // Construct the integer represented by this subset of the solution
@@ -92,11 +98,10 @@ int UnrestrictedNKQ::evaluate(size_t subfunction,
     index = (index << 1) | solution[neighbor];
   }
 
-  // Convert to percentage of total
   return table[subfunction][index];
 }
 
-// Use the table to evaluate the quality of the solution
+// Use the table to evaluate the quality of the solution for a subfunction
 int NearestNeighborNKQ::evaluate(size_t subfunction,
                                  const vector<bool> & solution) {
   // Construct the integer represented by this subset of the solution
@@ -117,6 +122,7 @@ NearestNeighborNKQ::NearestNeighborNKQ(Configuration& config) {
   table.resize(length_, vector<size_t>(2 << k, 0));
   int rng_seed = config.get<int>("problem_seed");
 
+  // set the epistasis table to be nearest neighbor
   for (size_t i = 0; i < length_; i++) {
     epistasis_.push_back(vector<size_t>());
     for (size_t x = 0; x <= k; x++) {
@@ -182,7 +188,7 @@ NearestNeighborNKQ::NearestNeighborNKQ(Configuration& config) {
 }
 
 // Used in finding the minimum / maximum of the generated problem.
-//
+// Scores a collection of adjacent bits
 size_t NearestNeighborNKQ::chunk_fitness(trimap& known, size_t chunk_index,
                                          size_t a, size_t b) {
   // If we know the fitness, return it
@@ -328,6 +334,7 @@ IsingSpinGlass::IsingSpinGlass(Configuration& config) {
   in.close();
 }
 
+// An edge scores based on the sign of the vertices and the spin
 int IsingSpinGlass::evaluate(size_t sub, const vector<bool>& solution) {
   return bit_to_sign[solution[epistasis_[sub][0]]] * spins[sub]
       * bit_to_sign[solution[epistasis_[sub][1]]];
@@ -377,7 +384,7 @@ MAXSAT::MAXSAT(Configuration& config) {
   }
 }
 
-// Count how many clauses evaluate to true
+// Determine if a clause is satisfied
 int MAXSAT::evaluate(size_t subfunction, const vector<bool> & solution) {
   for (size_t c = 0; c < 3; c++) {
     // if the literal is true, move to the next clause
@@ -388,6 +395,7 @@ int MAXSAT::evaluate(size_t subfunction, const vector<bool> & solution) {
   return 0;
 }
 
+// Reads in a MAXSAT problem from a file
 MAXSAT_File::MAXSAT_File(Configuration& config) {
 
   ifstream in(config.get<string>("sat_file"));
@@ -445,6 +453,7 @@ int MAXSAT_File::evaluate(size_t subfunction, const vector<bool> & solution) {
   return 0;
 }
 
+// Reads in a MAXCUT problem from the cut_file
 MAXCUT_File::MAXCUT_File(Configuration& config) {
   ifstream in(config.get<string>("cut_file"));
   size_t edges;
@@ -458,6 +467,7 @@ MAXCUT_File::MAXCUT_File(Configuration& config) {
   }
 }
 
+// An edge is cut if the vertices of that edge are assigned different values.
 int MAXCUT_File::evaluate(size_t subfunction, const vector<bool> & solution) {
   return (solution[epistasis_[subfunction][0]] !=
           solution[epistasis_[subfunction][1]]) ? weights[subfunction] : 0;

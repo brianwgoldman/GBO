@@ -1,5 +1,9 @@
 // Brian Goldman
 
+// For Black Box P3, the population is in charge of storing solutions,
+// performing linkage learning, and performing crossover.
+// Included only for timing purposes.
+
 #ifndef BLACKBOXPOPULATION_H_
 #define BLACKBOXPOPULATION_H_
 
