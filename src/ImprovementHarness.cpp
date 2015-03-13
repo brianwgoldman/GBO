@@ -20,7 +20,7 @@ ImprovementHarness::ImprovementHarness(shared_ptr<GrayBox> evaluator_,
   const auto& subfunctions = evaluator->epistasis();
 
   // Efficiency tool for converting a bit to the subfunctions it participates in
-  unordered_map<size_t, vector<size_t>> bit_to_sub;
+  vector<vector<size_t>> bit_to_sub(evaluator->length());
   for (size_t sub = 0; sub < subfunctions.size(); sub++) {
     for (const auto& bit : subfunctions[sub]) {
       bit_to_sub[bit].push_back(sub);
