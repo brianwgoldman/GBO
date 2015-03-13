@@ -84,17 +84,17 @@ int ImprovementHarness::optimize(Random & rand) {
   while (improvement_found) {
     improvement_found = false;
     // scan improvements until a step size has an improving move
-    for (size_t step_size = 0;
-        step_size < improvements.size() and not improvement_found;
-        step_size++) {
-      // scan potential improvements until an actual improving move is found
-      while (improvements[step_size].size() and not improvement_found) {
-        auto move = improvements[step_size].random(rand);
+    for (auto & potential : improvements) {
+      while (potential.size() and not improvement_found) {
+        auto move = potential.random(rand);
         if (0 < delta[move]) {
           make_move(move);  // Put in move
           improvement_found = true;
         }
-        improvements[step_size].turn_off(move);
+        potential.turn_off(move);
+      }
+      if (improvement_found) {
+        break;
       }
     }
   }
