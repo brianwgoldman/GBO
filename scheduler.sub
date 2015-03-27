@@ -1,0 +1,20 @@
+#PBS -l nodes=1:ppn=1
+#PBS -l mem=4gb
+#PBS -l walltime=3:59:00
+#PBS -l signal=SIGALRM ## Signal to stop the script 60 seconds before timeout
+#PBS -j oe
+#PBS -N auto
+#PBS -l feature=intel14
+#PBS -o /mnt/scratch/goldma72/auto_${PBS_JOBID}.tmp
+
+# Required by C++11
+module load GNU/4.8.2
+
+cd ${PBS_O_WORKDIR}
+
+if [ ! -f finished.txt ] # If "finished.txt" exists, no more tasks need to be done
+then
+    qsub scheduler.sub # Put a copy of yourself back in queue
+    # Runs the correct job
+    python scheduler.py ${PBS_JOBID}
+fi
