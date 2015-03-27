@@ -68,7 +68,7 @@ if __name__ == "__main__":
                         configure['filename'] = filename 
                         command = command_template % configure
                         if try_run(jobname, command, filename):
-                            print "Job Completed, existing"
+                            print "Job Completed, exiting"
                             sys.exit()
     print "No jobs left to run, stopping resubmissions"
     open("finished.txt", 'w').close()
