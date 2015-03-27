@@ -1,6 +1,7 @@
-from os import path
+from os import path, makedirs, remove
 from subprocess import call
 import time
+import errno
 
 def try_run(jobid, command, task_finished_file):
     '''
@@ -35,15 +36,25 @@ def try_run(jobid, command, task_finished_file):
         remove(lock_file)
     return True
 
+def make_sure_folders_exists(filename):
+    '''
+    Given a filename, create the directory structure necessary for that file to be created.
+    '''
+    try:
+        makedirs(path.dirname(filename))
+    except OSError as exception:
+        if exception.errno != errno.EEXIST:
+            raise
+
 if __name__ == "__main__":
     import sys
     jobname = sys.argv[1]
     # This is the command I want to call, using different arguments each time
     command_template = "Release/GBO config/default.cfg"
     command_template += " -problem %(problem)s -length %(length)i -k %(k)i -radius %(radius)i"
-    command_template += " -problem_seed %(pseed)i -enum_file $(filename)s"
-    # Where I am writing the output file.
-    filename_template = "%(problem)s_%(length)0.5i_%(k)0.2i_%(radius)0.2i_%(pseed)0.5i.txt"
+    command_template += " -problem_seed %(pseed)i -enum_file %(filename)s"
+    # Where I am writing the output file. Includes folder structure
+    filename_template = path.join("enumerate", "%(problem)s", "%(length)0.5i_%(k)0.2i_%(radius)0.2i_%(pseed)0.5i.txt")
     
     # Iterate over each configuration I want to test
     configure = {}
@@ -53,6 +64,7 @@ if __name__ == "__main__":
                 for configure['k'] in [1, 2, 3, 4]:
                     for configure['radius'] in [1, 2, 3]:
                         filename = filename_template % configure
+                        make_sure_folders_exists(filename)
                         configure['filename'] = filename 
                         command = command_template % configure
                         if try_run(jobname, command, filename):
