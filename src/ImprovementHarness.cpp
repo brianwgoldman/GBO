@@ -246,6 +246,7 @@ void ImprovementHarness::remap(vector<int>& new_to_org, vector<int>& org_to_new)
 }
 
 void ImprovementHarness::enumerate(ostream& out) {
+  recording.start_clock();
   int length = evaluator->length();
 
   vector<int> org_to_new, new_to_org;
@@ -295,7 +296,7 @@ void ImprovementHarness::enumerate(ostream& out) {
     }
     // End is reached
     if (i >= length) {
-      cout << "Count: " << count << endl;
+      out << "Count: " << count << " Elapsed: " << recording.elapsed() << endl;
       return;
     }
     modify_bit(new_to_org[i]); // reference[i] = 1

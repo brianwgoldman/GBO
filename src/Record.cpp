@@ -4,13 +4,16 @@
 // to a file.
 #include "Record.h"
 
+double Record::elapsed() {
+  auto current = std::chrono::steady_clock::now();
+  return std::chrono::duration<double>(current - start).count();
+}
+
 // Checks if this fitness is better than the best so far. If it is,
 // record it and the current amount of elapsed time.
 void Record::record(int fitness) {
   if (time_to_level.size() == 0 or time_to_level.back().first < fitness) {
-    auto current = std::chrono::steady_clock::now();
-    auto elapsed = std::chrono::duration<double>(current - start).count();
-    time_to_level.emplace_back(fitness, elapsed);
+    time_to_level.emplace_back(fitness, elapsed());
   }
 }
 

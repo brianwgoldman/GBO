@@ -28,6 +28,8 @@ class Record {
     start = std::chrono::steady_clock::now();
   }
 
+  double elapsed();
+
   // Conditionally records that "fitness" was reached for the
   // first time at this time.
   void record(int fitness);
