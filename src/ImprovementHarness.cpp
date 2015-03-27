@@ -177,3 +177,146 @@ void ImprovementHarness::flip_move(size_t move_index) {
     (*solution)[bit] = not (*solution)[bit];
   }
 }
+
+int ImprovementHarness::bin_dependency(const vector<vector<int>>& bins, int i) {
+  while (i >= 0) {
+    for (const auto & move : bins[i]) {
+      if (delta[move] > 0) {
+        return i;
+      }
+    }
+    i--;
+  }
+  return -1;
+}
+
+void ImprovementHarness::remap(vector<int>& new_to_org, vector<int>& org_to_new) {
+  int length = evaluator->length();
+  vector<int> location(moves_.size());
+  vector<unordered_set<int>> move_bin(length + 1);
+  vector<vector<int>> bit_to_move(length);
+  for (size_t move = 0; move < moves_.size(); move++) {
+    unordered_set<int> depends;
+    for (const auto& sub : move_to_sub[move]) {
+      for (int bit : evaluator->epistasis()[sub]) {
+        depends.insert(bit);
+      }
+    }
+    move_bin[depends.size()].insert(move);
+    location[move] = depends.size();
+    for (const auto& bit : depends) {
+      bit_to_move[bit].push_back(move);
+    }
+  }
+
+  int highest_available = length - 1;
+  org_to_new = vector<int>(length, -1);
+  new_to_org = vector<int>(length, -1);
+
+  while (highest_available >= 0) {
+    int move=-1;
+    for (const auto& bin : move_bin) {
+      if (bin.size()) {
+        move = *bin.begin();
+        break;
+      }
+    }
+    if (move == -1) {
+      break;
+    }
+    //cout << "Move: " << move << endl;
+    for (const auto& sub : move_to_sub[move]) {
+      for (int bit : evaluator->epistasis()[sub]) {
+        if (org_to_new[bit] == -1) {
+          org_to_new[bit] = highest_available;
+          new_to_org[highest_available] = bit;
+          for (const auto& effected : bit_to_move[bit]) {
+            int current = location[effected];
+            //cout << "Moving: " << effected << " from " << current << " to " << current-1 << endl;
+            move_bin[current].erase(effected);
+            move_bin[current-1].insert(effected);
+            location[effected] = current-1;
+          }
+          highest_available--;
+        }
+      }
+    }
+    move_bin[0].erase(move);
+  }
+}
+
+void ImprovementHarness::enumerate(ostream& out) {
+  int length = evaluator->length();
+
+  vector<int> org_to_new, new_to_org;
+  remap(new_to_org, org_to_new);
+
+  vector<int> min_dependency(moves_.size(), length);
+  for (size_t move = 0; move < moves_.size(); move++) {
+    for (const auto& sub : move_to_sub[move]) {
+      for (int bit : evaluator->epistasis()[sub]) {
+        if (min_dependency[move] > org_to_new[bit]) {
+          min_dependency[move] = org_to_new[bit];
+        }
+      }
+    }
+  }
+
+  vector<vector<int>> bins(length);
+  for (size_t move=0; move < min_dependency.size(); move++) {
+    bins[min_dependency[move]].push_back(move);
+  }
+
+  cout << "Max: " << *max_element(min_dependency.begin(), min_dependency.end()) << endl;
+
+  cout << "Bin Sizes" << endl;
+  for (const auto& x : bins) {
+    cout << x.size() << ", ";
+  }
+  cout << endl;
+  vector<bool> reference(length, false);
+  attach(&reference);
+  size_t count = 0;
+  bool going_up=true;
+  int progress = -1;
+
+  int i=length - 1;
+  while (true) {
+    i = bin_dependency(bins, i); // check if local optimum
+    if (i == -1) { // nothing needs to be flipped to be a local optimum
+      out << fitness << " ";
+      print(reference, out);
+      count++;
+      i = 0;
+    }
+    while (i < length and reference[new_to_org[i]]) {
+      modify_bit(new_to_org[i]); // reference[i] = 0
+      i++;
+    }
+    // End is reached
+    if (i >= length) {
+      cout << "Count: " << count << endl;
+      return;
+    }
+    modify_bit(new_to_org[i]); // reference[i] = 1
+    // output stuff
+    if (going_up) {
+      if (i > progress) {
+        //print(reference);
+        progress=i;
+        cout << "Going Up: " << i << endl;
+        if (progress==length-1) {
+          progress--;
+          going_up = false;
+        }
+      }
+    } else {
+      if (i == progress) {
+        //print(reference);
+        progress--;
+        cout << "Going Down: " << i << endl;
+      }
+    }
+  }
+
+}

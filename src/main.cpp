@@ -56,6 +56,13 @@ int main(int argc, char * argv[]) {
   // Initially the best is the lowest possible integer
   int best = numeric_limits<int>::min();
   double elapsed = 0;
+  auto enum_file = config.get<string>("enum_file");
+  if (enum_file != "none") {
+    ImprovementHarness harness(gray_box, config.get<int>("radius"), recording);
+    ofstream out(enum_file);
+    harness.enumerate(out);
+    return 0;
+  }
 
   // Start of timing
   auto start = chrono::steady_clock::now();

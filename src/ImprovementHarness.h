@@ -71,6 +71,11 @@ class ImprovementHarness {
     return fit;
   }
 
+  void remap(vector<int>& new_to_org, vector<int>& org_to_new);
+  int bin_dependency(const vector<vector<int>>& bins, int i);
+  void enumerate(ostream& out);
+
+
   // When "revert" is called, the solution and the harness's state are
   // reverted to how they looked when the last "set_check_point" was called.
   void set_check_point();

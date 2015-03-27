@@ -83,6 +83,10 @@ class RandSet {
   size_t capacity() const {
     return elements.size();
   }
+
+  using const_iterator=decltype(elements.cbegin());
+  const_iterator begin() const { return elements.begin(); }
+  const_iterator end() const { return elements.begin() + border; }
 };
 
 template<class DataType, class Rand>
