@@ -8,8 +8,9 @@ runs <- length(unique(data$seed))
 make_plot <- function(sub_data, group) {
   plt <- ggplot(data = sub_data,
                 aes_string("seconds", "fitness_scaled", color=group, shape=group))
-  plt <- plt + geom_line(stat="summary", fun.y=median_NA_high(runs), show_guide=FALSE)
-  plt <- plt + geom_point(stat="summary", fun.y=median_NA_high(runs), size=3)
+  plt <- plt + geom_line(stat="summary", fun.y=pad_call(median, runs, Inf), show_guide=FALSE)
+  plt <- plt + geom_point(stat="summary", fun.y=pad_call(median, runs, Inf), size=3)
+  plt <- plt + geom_errorbar(stat="summary", fun.data=pad_call(median.quartile, runs, Inf), show_guide=FALSE)
   plt <- plt + clean + log_x + log_y
   return(plt)
 }
