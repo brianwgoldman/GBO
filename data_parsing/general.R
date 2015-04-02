@@ -29,8 +29,6 @@ legend_top_right <- theme(legend.justification=c(1,1), legend.position=c(1,1))
 
 
 four_color = c("#b2df8a", "#33a02c", "#1f78b4", "#a6cee3")
-five_split <- c("#d7191c", "#fdae61", "#000000", "#abd9e9", "#2c7bb6")
-#six_split <- c("#8c510a", "#d8b365", "#f6e8c3", "#c7eae5", "#5ab4ac", "#01665e")
 six_split <- c("#8c510a", "#bf812d", "#dfc27d", "#80cdc1", "#35978f", "#01665e")
 
 no_axis <- theme(axis.title.x = element_blank(), axis.title.y = element_blank()) 
@@ -42,44 +40,18 @@ opt_shape <- scale_shape_manual(name="Optimizer", values=c(16, 17, 15, 7, 3, 8),
 rad_color <- scale_color_manual(name="Radius", values=six_split)
 rad_shape <- scale_shape_manual(name="Radius", values=c(16, 17, 15, 7, 3, 8))
 
-median_NA_high <- function(padding) {  
-  median_inner <- function(data) {
-    worst <- max(data, na.rm=TRUE)
-    data <- c(data, rep(worst+1, padding - length(data)))
-    data[is.na(data)] <- worst+1
-    result <- median(data)
-    if(result > worst) {
-      result <- NA
-    }
+pad_call <- function(fun, padding, value) {
+  inner <- function(data) {
+    new_data <- c(data, rep(value, padding - length(data)))
+    result <- fun(new_data)
+    result[result==value] <- NA
     return(result)
   }
-  return(median_inner)
+  return(inner)
 }
 
-
-################################### Currently Unused ###################
-
-solver_labels <- c('Hill Climber', '1+(Lambda,Lambda)', 'hBOA', 'Parameter-less hBOA', 'LTGA', 'P3')
-problem_labels <- c("Deceptive Trap", "Deceptive Step Trap", "HIFF", "Rastrigin", "Nearest Neighbor NK", "Ising Spin Glass", "MAX-SAT")
-names(problem_labels) <- c("DeceptiveTrap", "DeceptiveStepTrap", "HIFF", "Rastrigin", "NearestNeighborNK", "IsingSpinGlass", "MAXSAT")
-
-problem_shapes <- c(24, 25, 21, 22, 23, 3, 4)
-
-
-seven_plot <- function(p1, p2, p3, p4, p5, p6, p7, xlabel, ylabel) {
-  tmp <- ggplot_gtable(ggplot_build(p1))
-  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
-  group_legend <- tmp$grobs[[leg]]
-
-  nl <- theme(legend.position="none", axis.title.x = element_blank(), axis.title.y = element_blank()) 
-  result <- arrangeGrob(arrangeGrob(p1 + nl),
-                       arrangeGrob(p2 + nl),
-                       arrangeGrob(p3 + nl),
-                       arrangeGrob(p4 + nl),
-                       arrangeGrob(p5 + nl),
-                       arrangeGrob(p6 + nl),
-                       arrangeGrob(p7 + nl),
-                       group_legend,
-                       sub=paste(xlabel, "\n", sep=""), left=paste("\n", ylabel, sep=""), ncol=3)
-  return(result)
+median.quartile <- function(x){
+  out <- quantile(x, probs = c(0.25,0.5,0.75))
+  names(out) <- c("ymin","y","ymax")
+  return(out)
 }

@@ -11,7 +11,7 @@ names(bests)[names(bests) == 'fitness'] <- "max_fitness"
 data <- merge(data, bests)
 data$fitness_scaled <- 1 - data$fitness / data$max_fitness
 
-true <- read.csv("../radius/true_best.csv", header=T)
+true <- read.csv("true_best.csv", header=T)
 together <- merge(data, true)
 aggregate(seed~problem+length, subset(together, best==1 & fitness!=optimal), FUN=function(x) length(unique(x)))
 
@@ -43,23 +43,21 @@ BigO(data, "NearestNeighborNKQ", "BlackBoxP3")
 BigO(subset(data, length <= 4096), "IsingSpinGlass", "Pyramid")
 BigO(subset(data, length <= 4096), "IsingSpinGlass", "BlackBoxP3")
 
-
 make_plot <- function(all_data, problem_name, key) {
   plt <- ggplot(data = subset(all_data, problem==problem_name),
                 aes_string(x = "length", y=key, color="solver", shape="solver"))
-  plt <- plt + geom_line(stat="summary", fun.y=median_NA_high(runs), show_guide=FALSE)
-  plt <- plt + geom_point(stat="summary", fun.y=median_NA_high(runs), size=3)
+  plt <- plt + geom_line(stat="summary", fun.y=pad_call(median, runs, Inf), show_guide=FALSE)
+  plt <- plt + geom_point(stat="summary", fun.y=pad_call(median, runs, Inf), size=3)
+  plt <- plt + geom_errorbar(stat="summary", fun.data=pad_call(median.quartile, runs, Inf), show_guide=FALSE)
   plt <- plt + opt_color + opt_shape
   plt <- plt + clean + xlab("Length")
   return(plt)
 }
 plt <- make_plot(data, "NearestNeighborNKQ", "bsec") + ylab("Seconds") + log_x + log_y + legend_bot_right
-plt <- plt + geom_segment(aes(x=1000, y=3, xend=1000, yend=1100), color="black") + annotate("text", x=1000, y=200, label="-375x Speedup", hjust=0)
 ggsave("length-nn.eps", plt, width=5, height=5)
 
 
 plt <- make_plot(data, "IsingSpinGlass", "bsec") + ylab("Seconds") + log_x + log_y + legend_bot_right
-plt <- plt + geom_segment(aes(x=2025, y=220, xend=2025, yend=1500), color="black") + annotate("text", x=2025, y=600, label="-4.6x Speedup", hjust=0)
 ggsave("length-is.eps", plt, width=5, height=5)
 
 ggsave("length-un.eps", make_plot(data, "UnrestrictedNKQ", "fitness_scaled") + log_x + ylab("Error") + theme(legend.justification=c(1,0), legend.position=c(1,.2)), width=5, height=5)
