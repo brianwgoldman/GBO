@@ -62,6 +62,21 @@ private:
   size_t trap_size;
 };
 
+class DeceptiveStepTrap : public GrayBox {
+ public:
+  DeceptiveStepTrap(Configuration& config);
+  int evaluate(size_t subfunction, const vector<bool> & solution) override;
+  create_graybox(DeceptiveStepTrap);
+  int max_fitness() {return maximum;}
+
+private:
+  size_t trap_size;
+  size_t step_size;
+  int maximum;
+  int offset;
+};
+
+
 // Fitness landscape with N subfunctions, each reading from K+1
 // variables to look up a function value from a randomly generated table,
 // such that table entries must be 0 through 2**k - 1
@@ -172,18 +187,31 @@ private:
   int maximum;
 };
 
+// Reads MAXCUT problems from a file.
+class VertexCover_File : public GrayBox {
+ public:
+  VertexCover_File(Configuration& config);
+  int evaluate(size_t subfunction, const vector<bool> & solution) override;
+  create_graybox(VertexCover_File);
+  int max_fitness() {return maximum;}
+private:
+  int maximum;
+};
+
 // This mapping is used to convert a problem's name into an instance
 // of that Evaluator object
 namespace evaluation {
 using pointer=shared_ptr<GrayBox> (*)(Configuration &);
 static std::unordered_map<string, pointer> lookup({
   { "DeceptiveTrap", DeceptiveTrap::create },
+  { "DeceptiveStepTrap", DeceptiveStepTrap::create },
   { "NearestNeighborNKQ", NearestNeighborNKQ::create },
   { "UnrestrictedNKQ", UnrestrictedNKQ::create },
   { "IsingSpinGlass", IsingSpinGlass::create },
   { "MAXSAT", MAXSAT::create },
   { "MAXSAT_File", MAXSAT_File::create },
   { "MAXCUT_File", MAXCUT_File::create },
+  { "VertexCover_File", VertexCover_File::create },
 });
 }
 

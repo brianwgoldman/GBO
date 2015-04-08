@@ -36,8 +36,7 @@ class Optimizer {
   virtual int iterate() = 0;
 
   // Returns any optimization algorithm specific recording that was performed.
-  virtual string finalize() {
-    return string();
+  virtual void dump(ostream& out) {
   }
 
  protected:

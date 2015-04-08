@@ -90,7 +90,11 @@ int main(int argc, char * argv[]) {
       and best < gray_box->max_fitness());
   // Output any recording information as directed by the configuration.
   recording.dump(config);
-
+  string meta_file = config.get<string>("meta_file");
+  if (meta_file != "none") {
+    ofstream out(meta_file);
+    solver->dump(out);
+  }
   cout << endl << "----------------Minutes: " << elapsed << " Best: " << best
        << endl;
   return 0;

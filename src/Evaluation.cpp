@@ -49,6 +49,34 @@ int DeceptiveTrap::evaluate(size_t subfunction, const vector<bool> & solution) {
   return partial;
 }
 
+DeceptiveStepTrap::DeceptiveStepTrap(Configuration& config)
+    : trap_size(config.get<int>("trap_size")), step_size(config.get<int>("step_size")) {
+  length_ = config.get<int>("length");
+  for (size_t i = 0; i < length_; i += trap_size) {
+    epistasis_.emplace_back(trap_size, 0);
+    iota(epistasis_.back().begin(), epistasis_.back().end(), i);
+  }
+  offset = (trap_size - step_size) % step_size;
+  maximum = ((offset + trap_size) / step_size) * (length_ / trap_size);
+}
+
+// Score a trap
+int DeceptiveStepTrap::evaluate(size_t subfunction, const vector<bool> & solution) {
+  size_t partial = 0;
+  for (const auto& index : epistasis_[subfunction]) {
+    partial += solution[index];
+  }
+
+  // Make it deceptive
+  if (partial < trap_size) {
+    partial = trap_size - partial - 1;
+  }
+
+  // Convert to percentage of total
+  return (offset + partial) / step_size;;
+}
+
+
 // Landscape of N random subfunctions, each of which depending on K+1
 // variables, returning one of Q unique values.
 UnrestrictedNKQ::UnrestrictedNKQ(Configuration& config) {
@@ -471,4 +499,43 @@ MAXCUT_File::MAXCUT_File(Configuration& config) {
 int MAXCUT_File::evaluate(size_t subfunction, const vector<bool> & solution) {
   return (solution[epistasis_[subfunction][0]] !=
           solution[epistasis_[subfunction][1]]) ? weights[subfunction] : 0;
+}
+
+VertexCover_File::VertexCover_File(Configuration& config) {
+  ifstream in(config.get<string>("vc_file"));
+  char line_key;
+  string ignore;
+  while (in >> line_key) {
+    if (line_key == 'p') {
+      break;
+    }
+    getline(in, ignore);
+  }
+  in >> ignore;
+  size_t edges;
+  in >> length_ >> edges;
+  // number of "off" vertices + 2 points for each edge
+  maximum = length_ + 2 * edges;
+  cout << "Maximum: " << maximum << endl;
+  config.set("length", length_);
+  size_t x, y;
+  for (size_t i=0 ; i < length_; i++) {
+    epistasis_.push_back({i});
+  }
+  while (in >> line_key >> x >> y) {
+    if (line_key == 'e') {
+      epistasis_.push_back( { x - 1, y - 1 });
+    }
+  }
+}
+
+// An edge is cut if the vertices of that edge are assigned different values.
+int VertexCover_File::evaluate(size_t subfunction, const vector<bool> & solution) {
+  const auto & sub = epistasis_[subfunction];
+  if (sub.size() == 1) {
+    return solution[sub[0]] == 0;
+  }
+  else {
+    return (solution[sub[0]] or solution[sub[1]]) * 2;
+  }
 }

@@ -252,23 +252,18 @@ void ImprovementHarness::enumerate(ostream& out) {
   vector<int> org_to_new, new_to_org;
   remap(new_to_org, org_to_new);
 
-  vector<int> min_dependency(moves_.size(), length);
+  vector<vector<int>> bins(length);
   for (size_t move = 0; move < moves_.size(); move++) {
+    int min_dependency = length;
     for (const auto& sub : move_to_sub[move]) {
       for (int bit : evaluator->epistasis()[sub]) {
-        if (min_dependency[move] > org_to_new[bit]) {
-          min_dependency[move] = org_to_new[bit];
+        if (min_dependency > org_to_new[bit]) {
+          min_dependency = org_to_new[bit];
         }
       }
     }
+    bins[min_dependency].push_back(move);
   }
-
-  vector<vector<int>> bins(length);
-  for (size_t move=0; move < min_dependency.size(); move++) {
-    bins[min_dependency[move]].push_back(move);
-  }
-
-  cout << "Max: " << *max_element(min_dependency.begin(), min_dependency.end()) << endl;
 
   cout << "Bin Sizes" << endl;
   for (const auto& x : bins) {
@@ -278,9 +273,9 @@ void ImprovementHarness::enumerate(ostream& out) {
   vector<bool> reference(length, false);
   attach(&reference);
   size_t count = 0;
-  bool going_up=true;
+  int pass=1;
   int progress = -1;
-
+  cout << "Pass " << pass << ": ";
   int i=length - 1;
   while (true) {
     i = bin_dependency(bins, i); // check if local optimum
@@ -296,28 +291,21 @@ void ImprovementHarness::enumerate(ostream& out) {
     }
     // End is reached
     if (i >= length) {
+      cout << endl;
       out << "Count: " << count << " Elapsed: " << recording.elapsed() << endl;
       return;
     }
     modify_bit(new_to_org[i]); // reference[i] = 1
     // output stuff
-    if (going_up) {
-      if (i > progress) {
-        //print(reference);
-        progress=i;
-        cout << "Going Up: " << i << endl;
-        if (progress==length-1) {
-          progress--;
-          going_up = false;
-        }
-      }
-    } else {
-      if (i == progress) {
-        //print(reference);
-        progress--;
-        cout << "Going Down: " << i << endl;
+    if (i > progress) {
+      progress=i;
+      cout << i << ", ";
+      cout.flush();
+      if (progress==length-pass) {
+        progress=-1;
+        pass++;
+        cout << endl << "Pass " << pass << ": ";
       }
     }
   }
-
 }

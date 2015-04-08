@@ -26,6 +26,7 @@ public:
   Pyramid(Random& _rand, Configuration& _config, ImprovementHarness& _harness);
   int iterate() override;
   create_optimizer(Pyramid);
+  void dump(ostream& out) override;
 };
 
 #endif /* PYRAMID_H_ */

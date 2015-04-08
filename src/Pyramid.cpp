@@ -106,10 +106,6 @@ int Pyramid::iterate() {
         }
         fitness = new_fitness;
         harness.set_check_point();
-        // drop out now if you reached the global optimum
-        if (fitness >= harness.max_fitness()) {
-          return fitness;
-        }
       } else {
         // undo all changes made by this donation.
         harness.revert();
@@ -120,4 +116,14 @@ int Pyramid::iterate() {
     add_if_unique(solution, solutions.size());
   }
   return fitness;
+}
+
+void Pyramid::dump(ostream& out) {
+  out << "level\tfitness\tgenome" << endl;
+  for (size_t level=0; level < solutions.size(); level++) {
+    for (const auto& solution : solutions[level]) {
+      out << level << "\t" << harness.evaluate(solution) << "\t";
+      print(solution, out);
+    }
+  }
 }
