@@ -60,7 +60,13 @@ int main(int argc, char * argv[]) {
   if (enum_file != "none") {
     ImprovementHarness harness(gray_box, config.get<int>("radius"), recording);
     ofstream out(enum_file);
-    harness.enumerate(out);
+    auto enum_input = config.get<string>("enum_input");
+    if (enum_input != "none") {
+      ifstream input(enum_input);
+      harness.enumerate(out, input);
+    } else {
+      harness.enumerate(out);
+    }
     return 0;
   }
 

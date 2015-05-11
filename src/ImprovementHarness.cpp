@@ -309,3 +309,35 @@ void ImprovementHarness::enumerate(ostream& out) {
     }
   }
 }
+
+void ImprovementHarness::enumerate(ostream& out, std::istream& in) {
+  recording.start_clock();
+  int fitness;
+  string raw;
+  int length = evaluator->length();
+  int count = 0;
+  int lines = 0;
+  vector<bool> reference(length);
+  while (in >> fitness >> raw) {
+    lines ++;
+    if (lines % 10000 == 0) {
+      cout << "Completed " << lines << " lines" << endl;
+    }
+    for (int i=0; i < length; i++) {
+      reference[i] = raw[i] == '1';
+    }
+    attach(&reference);
+    bool keep = true;
+    for (const auto & d : delta) {
+      if (d > 0) {
+        keep = false;
+        break;
+      }
+    }
+    if (keep) {
+      out << fitness << " " << raw << endl;
+      count ++;
+    }
+  }
+  out << "Count: " << count << " Elapsed: " << recording.elapsed() << endl;
+}
